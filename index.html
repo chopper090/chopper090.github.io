@@ -2,19 +2,213 @@
 <html lang="it">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>chopper090 · Obiettivi &amp; Note</title>
-<meta http-equiv="refresh" content="0; url=./argo/">
-<link rel="canonical" href="./argo/">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>chopper090 · le mie app</title>
+<meta name="description" content="Launcher di tutte le mie app: chitarra, home restaurant, tool. Ogni app resta indipendente.">
+<link rel="canonical" href="https://chopper090.github.io/">
+
+<!-- anti-FOUC: tema prima del primo paint -->
+<script>(function(){try{var t=localStorage.getItem('hub.theme');
+  if(t!=='light'&&t!=='dark')t=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
+  document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" id="metaTheme" content="#F6F4EE">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Le mie app">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
 <style>
-  html{color-scheme:light dark}
-  body{margin:0;min-height:100svh;display:grid;place-items:center;
-    font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#F6F4EE;color:#1A1D24}
-  @media (prefers-color-scheme:dark){body{background:#15171C;color:#ECE9E0}}
-  a{color:#C15F3C;font-weight:600;text-decoration:none}
+:root{
+  --bg:#F6F4EE; --surface:#FFFFFF; --surface-2:#EFECE3; --surface-3:#E6E1D2;
+  --border:#DDD7C7; --border-strong:#C5BDA6; --border-subtle:#ECE7DA;
+  --text:#1A1D24; --text-muted:#5B626E; --text-subtle:#7B8290;
+  --accent:#C15F3C;
+  --r-sm:8px; --r-md:14px; --r-lg:20px;
+  --shadow-sm:0 1px 2px rgba(20,18,12,.05);
+  --shadow-md:0 1px 3px rgba(20,18,12,.07),0 2px 10px rgba(20,18,12,.05);
+  --shadow-lg:0 6px 22px rgba(20,18,12,.10),0 16px 48px rgba(20,18,12,.12);
+  --font-ui:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+:root[data-theme="dark"]{
+  --bg:#15171C; --surface:#1C1F26; --surface-2:#232730; --surface-3:#2C313C;
+  --border:#2F3540; --border-strong:#434A57; --border-subtle:#232730;
+  --text:#ECE9E0; --text-muted:#A8AEBA; --text-subtle:#858C99;
+  --accent:#E07A52;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.30);
+  --shadow-md:0 1px 3px rgba(0,0,0,.40),0 2px 10px rgba(0,0,0,.35);
+  --shadow-lg:0 6px 22px rgba(0,0,0,.50),0 16px 48px rgba(0,0,0,.55);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{color-scheme:light dark}
+body{background:var(--bg);color:var(--text);font-family:var(--font-ui);font-size:16px;line-height:1.6;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;min-height:100svh;}
+.wrap{max-width:1040px;margin:0 auto;padding:48px 24px 64px;}
+@media(min-width:720px){.wrap{padding:64px 40px 80px;}}
+
+.eyebrow,.cat-label,.ft{font-family:var(--font-mono);font-size:11px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--text-muted);}
+
+header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;}
+.eyebrow{margin-bottom:14px;color:var(--accent);}
+h1{font-weight:700;font-size:clamp(30px,5.2vw,46px);line-height:1.05;letter-spacing:-.02em;text-wrap:balance;}
+.sub{color:var(--text-muted);margin-top:12px;max-width:54ch;font-size:15.5px;text-wrap:pretty;}
+
+.theme-toggle{flex:none;width:42px;height:42px;border-radius:var(--r-md);border:1px solid var(--border);
+  background:var(--surface);color:var(--text);cursor:pointer;display:grid;place-items:center;
+  box-shadow:var(--shadow-sm);transition:border-color .2s,transform .2s,box-shadow .2s;font-size:18px;}
+.theme-toggle:hover{border-color:var(--accent);transform:translateY(-1px);box-shadow:var(--shadow-md);}
+
+section.cat{margin-top:44px;}
+.cat-label{display:flex;align-items:center;gap:12px;margin-bottom:18px;}
+.cat-label::after{content:"";flex:1;height:1px;background:var(--border-subtle);}
+
+.grid{display:grid;grid-template-columns:1fr;gap:16px;}
+@media(min-width:560px){.grid{grid-template-columns:1fr 1fr;}}
+
+.card{position:relative;display:flex;align-items:center;gap:18px;text-decoration:none;color:inherit;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px 22px;
+  box-shadow:var(--shadow-sm);transition:transform .18s ease,border-color .18s,box-shadow .18s;overflow:hidden;}
+.card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--app-color,var(--accent));}
+.card:hover{transform:translateY(-3px);border-color:var(--app-color,var(--accent));box-shadow:var(--shadow-lg);}
+.card.soon{opacity:.5;pointer-events:none;}
+
+.ic{flex:none;width:56px;height:56px;border-radius:14px;background:var(--surface-2);overflow:hidden;
+  border:1px solid var(--border-subtle);display:grid;place-items:center;}
+.ic img{width:100%;height:100%;object-fit:cover;display:block;}
+.ic .fallback{width:100%;height:100%;display:grid;place-items:center;font-family:var(--font-mono);
+  font-weight:600;font-size:22px;color:#fff;background:var(--app-color,var(--accent));}
+
+.txt{min-width:0;flex:1;}
+.name{font-weight:600;font-size:18px;letter-spacing:-.01em;display:flex;align-items:center;gap:8px;}
+.tag{color:var(--text-muted);font-size:13.5px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.badge{font-family:var(--font-mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  background:var(--surface-3);color:var(--text-subtle);padding:2px 7px;border-radius:999px;}
+.arrow{flex:none;color:var(--text-subtle);font-size:18px;transition:transform .18s,color .18s;}
+.card:hover .arrow{color:var(--app-color,var(--accent));transform:translateX(3px);}
+
+footer{margin-top:56px;padding-top:22px;border-top:1px solid var(--border-subtle);
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+footer .ft a{color:var(--text-muted);text-decoration:none;}
+footer .ft a:hover{color:var(--accent);}
 </style>
 </head>
 <body>
-  <p>Reindirizzamento a <a href="./argo/">Obiettivi &amp; Note</a>…</p>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow">chopper090 · workspace</div>
+      <h1>Le mie app</h1>
+      <p class="sub">Tutte in un posto. Ogni app è indipendente: si apre dal suo indirizzo e si aggiorna per conto suo.</p>
+    </div>
+    <button class="theme-toggle" id="themeBtn" title="Cambia tema" aria-label="Cambia tema">◐</button>
+  </header>
+
+  <div id="content"></div>
+
+  <footer>
+    <span class="ft" id="count">—</span>
+    <span class="ft">offline · niente tracking · niente cookie</span>
+  </footer>
+</div>
+
+<script>
+/* ===== TOC: helper · card · enrich(da manifest) · render · tema · sw ===== */
+var content = document.getElementById('content');
+
+function el(tag, cls, txt){ var e=document.createElement(tag); if(cls)e.className=cls; if(txt!=null)e.textContent=txt; return e; }
+function appUrl(s){ return './' + s + '/'; }
+
+function cardEl(app){
+  var a = el('a', 'card' + (app.soon ? ' soon' : ''));
+  a.href = app.soon ? '#' : appUrl(app.slug);
+  if(app.color) a.style.setProperty('--app-color', app.color);
+
+  var ic = el('div','ic');
+  ic.appendChild(el('div','fallback', (app.name||app.slug).slice(0,1).toUpperCase()));
+
+  var txt = el('div','txt');
+  var name = el('div','name');
+  var nameText = document.createTextNode(app.name || app.slug);
+  name.appendChild(nameText);
+  if(app.soon) name.appendChild(el('span','badge','in arrivo'));
+  var tag = el('div','tag', app.tagline || '');
+  txt.appendChild(name); txt.appendChild(tag);
+
+  a.appendChild(ic);
+  a.appendChild(txt);
+  a.appendChild(el('div','arrow', app.soon ? '' : '→'));
+
+  a._app = app; a._ic = ic; a._nameText = nameText; a._tag = tag;
+  return a;
+}
+
+function enrich(card){
+  var app = card._app; if(app.soon) return;
+  fetch(appUrl(app.slug) + 'manifest.webmanifest', {cache:'no-cache'})
+    .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+    .then(function(m){
+      var nm = m.short_name || m.name || app.name;
+      card._nameText.nodeValue = nm;
+      if(m.description) card._tag.textContent = m.description;
+      if(m.theme_color){ card.style.setProperty('--app-color', m.theme_color); }
+      var icons = (m.icons||[]).slice();
+      var pick = icons.filter(function(i){ return /(^|\D)192(\D|$)/.test(i.sizes||''); })[0]
+              || icons.filter(function(i){ return /512/.test(i.sizes||''); })[0]
+              || icons[0];
+      if(pick && pick.src){
+        var img = new Image();
+        img.alt = nm;
+        img.onload = function(){ card._ic.innerHTML=''; card._ic.appendChild(img); };
+        img.src = appUrl(app.slug) + pick.src.replace(/^\.?\//,'');
+      }
+    })
+    .catch(function(){ /* resta il fallback */ });
+}
+
+function render(data){
+  content.innerHTML = '';
+  var total = 0;
+  (data.categories||[]).forEach(function(cat){
+    var sec = el('section','cat');
+    sec.appendChild(el('div','cat-label', cat.label));
+    var grid = el('div','grid');
+    (cat.apps||[]).forEach(function(app){
+      var c = cardEl(app); grid.appendChild(c); enrich(c);
+      if(!app.soon) total++;
+    });
+    sec.appendChild(grid);
+    content.appendChild(sec);
+  });
+  document.getElementById('count').textContent = total + ' app';
+}
+
+fetch('apps.json', {cache:'no-cache'}).then(function(r){ return r.json(); }).then(render)
+  .catch(function(){ content.appendChild(el('p','sub','Impossibile caricare la lista app.')); });
+
+/* tema */
+var btn = document.getElementById('themeBtn');
+function applyTheme(){
+  var dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  btn.textContent = dark ? '☀' : '☾';
+  document.getElementById('metaTheme').setAttribute('content', dark ? '#15171C' : '#F6F4EE');
+}
+applyTheme();
+btn.addEventListener('click', function(){
+  var nx = (document.documentElement.getAttribute('data-theme') === 'dark') ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', nx);
+  try{ localStorage.setItem('hub.theme', nx); }catch(e){}
+  applyTheme();
+});
+
+/* PWA */
+if('serviceWorker' in navigator){ addEventListener('load', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); }); }
+</script>
 </body>
 </html>

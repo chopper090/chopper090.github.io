@@ -1,0 +1,17 @@
+{
+  "name": "chopper090 — le mie app",
+  "short_name": "Le mie app",
+  "description": "Launcher di tutte le mie app: chitarra, home restaurant, tool. Ogni app resta indipendente.",
+  "lang": "it",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#15171C",
+  "theme_color": "#15171C",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
