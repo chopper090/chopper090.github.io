@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "io.github.chopper090.argo",
+      "sha256_cert_fingerprints": [
+        "60:60:F4:AB:13:98:DF:6E:F8:A3:ED:45:EE:C3:96:2E:5A:92:52:67:61:D6:9A:16:C3:88:38:67:59:5A:F5:08"
+      ]
+    }
+  }
+]
