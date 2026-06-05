@@ -1,5 +1,5 @@
 {
-  "_nota": "Lista degli URL + categoria + taglia. Nome/icona/colore vengono letti a runtime dal manifest live di ogni app (auto-sync). 'size' controlla il tile nel layout bento: hero (2x2) · wide (2x1) · tall (1x2) · sm (1x1, default). L'ordine qui = l'ordine nella griglia. Aggiungere un'app = una riga qui.",
+  "_nota": "Lista degli URL + categoria + taglia. Nome/icona/colore/screenshot vengono letti a runtime dal manifest live di ogni app (auto-sync). 'size' controlla il tile bento: hero (2x2) · wide (2x1) · tall (1x2) · sm (1x1, default). Campi opzionali per-app: cols (blocchi X 1-4) · rows (blocchi Y 1-3) · bg (screenshot|synthetic|solid|gradient|none) · view (standard|compact|icon|detail). In alternativa al formato 'categories' si può usare il formato flat con 'cat' su ogni app (vedi export dall'editor: matita in alto a destra). L'ordine qui = l'ordine nella griglia. Aggiungere un'app = una riga qui.",
   "categories": [
     {
       "label": "Chitarra",
