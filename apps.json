@@ -1,26 +1,26 @@
 {
-  "_nota": "Lista degli URL + categoria. Nome/icona/colore vengono letti a runtime dal manifest live di ogni app (auto-sync). Aggiungere un'app = una riga qui.",
+  "_nota": "Lista degli URL + categoria + taglia. Nome/icona/colore vengono letti a runtime dal manifest live di ogni app (auto-sync). 'size' controlla il tile nel layout bento: hero (2x2) · wide (2x1) · tall (1x2) · sm (1x1, default). L'ordine qui = l'ordine nella griglia. Aggiungere un'app = una riga qui.",
   "categories": [
     {
       "label": "Chitarra",
       "apps": [
-        { "slug": "nemo",    "name": "Nemo",      "tagline": "Fretboard & ear training",     "color": "#5840D7" },
-        { "slug": "lucille", "name": "Lucille",   "tagline": "Pentatonica · guida blues",     "color": "#E8A838" }
+        { "slug": "nemo",    "name": "Nemo",      "tagline": "Fretboard & ear training",     "color": "#5840D7", "size": "hero" },
+        { "slug": "lucille", "name": "Lucille",   "tagline": "Pentatonica · guida blues",     "color": "#E8A838", "size": "sm" }
       ]
     },
     {
       "label": "Home restaurant",
       "apps": [
-        { "slug": "umami",   "name": "Umami",     "tagline": "Matrice dei sapori",            "color": "#C2611F" },
-        { "slug": "cambusa", "name": "Cambusa",   "tagline": "Gestione · food cost · HACCP",  "color": "#3B5BDB" },
-        { "slug": "lentini", "name": "DaLentini", "tagline": "Menu & brand",                  "color": "#C4A86A" }
+        { "slug": "umami",   "name": "Umami",     "tagline": "Matrice dei sapori",            "color": "#C2611F", "size": "tall" },
+        { "slug": "cambusa", "name": "Cambusa",   "tagline": "Gestione · food cost · HACCP",  "color": "#3B5BDB", "size": "sm" },
+        { "slug": "lentini", "name": "DaLentini", "tagline": "Menu & brand",                  "color": "#C4A86A", "size": "wide" }
       ]
     },
     {
       "label": "Tools",
       "apps": [
-        { "slug": "argo",    "name": "Argo",      "tagline": "Obiettivi, note, spese",        "color": "#3B5BDB" },
-        { "slug": "glaido",  "name": "Glaido",    "tagline": "In arrivo",                     "color": "#7B8290", "soon": true }
+        { "slug": "argo",    "name": "Argo",      "tagline": "Obiettivi, note, spese",        "color": "#3B5BDB", "size": "sm" },
+        { "slug": "glaido",  "name": "Glaido",    "tagline": "In arrivo",                     "color": "#7B8290", "size": "wide", "soon": true }
       ]
     }
   ]

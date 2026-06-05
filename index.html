@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>chopper090 · le mie app</title>
-<meta name="description" content="Launcher di tutte le mie app: chitarra, home restaurant, tool. Ogni app resta indipendente.">
+<title>CHOPPER · le mie app</title>
+<meta name="description" content="CHOPPER — launcher di tutte le mie app: chitarra, home restaurant, tool. Ogni app resta indipendente.">
 <link rel="canonical" href="https://chopper090.github.io/">
 
 <!-- anti-FOUC: tema prima del primo paint -->
@@ -16,12 +16,12 @@
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" id="metaTheme" content="#F6F4EE">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Le mie app">
+<meta name="apple-mobile-web-app-title" content="CHOPPER">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
 :root{
@@ -52,48 +52,61 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-ui);font-size
 .wrap{max-width:1040px;margin:0 auto;padding:48px 24px 64px;}
 @media(min-width:720px){.wrap{padding:64px 40px 80px;}}
 
-.eyebrow,.cat-label,.ft{font-family:var(--font-mono);font-size:11px;letter-spacing:.22em;
+.eyebrow,.ft{font-family:var(--font-mono);font-size:11px;letter-spacing:.22em;
   text-transform:uppercase;color:var(--text-muted);}
 
-header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;}
-.eyebrow{margin-bottom:14px;color:var(--accent);}
-h1{font-weight:700;font-size:clamp(30px,5.2vw,46px);line-height:1.05;letter-spacing:-.02em;text-wrap:balance;}
-.sub{color:var(--text-muted);margin-top:12px;max-width:54ch;font-size:15.5px;text-wrap:pretty;}
+header{position:relative;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;}
+.head-text{position:relative;z-index:1;max-width:62%;}
+.mascot{position:absolute;right:8px;bottom:-8px;height:142px;width:auto;z-index:0;pointer-events:none;
+  -webkit-user-select:none;user-select:none;filter:drop-shadow(0 10px 20px rgba(20,18,12,.20));}
+@media(max-width:560px){.head-text{max-width:66%;}.mascot{height:104px;right:0;bottom:-4px;}}
+.eyebrow{margin-bottom:12px;color:var(--accent);}
+h1{font-family:var(--font-mono);font-weight:700;font-size:clamp(34px,6vw,52px);line-height:1;
+  letter-spacing:.04em;text-transform:uppercase;}
+.sub{color:var(--text-muted);margin-top:14px;max-width:54ch;font-size:15.5px;text-wrap:pretty;}
 
-.theme-toggle{flex:none;width:42px;height:42px;border-radius:var(--r-md);border:1px solid var(--border);
+.theme-toggle{flex:none;position:relative;z-index:2;width:42px;height:42px;border-radius:var(--r-md);border:1px solid var(--border);
   background:var(--surface);color:var(--text);cursor:pointer;display:grid;place-items:center;
   box-shadow:var(--shadow-sm);transition:border-color .2s,transform .2s,box-shadow .2s;font-size:18px;}
 .theme-toggle:hover{border-color:var(--accent);transform:translateY(-1px);box-shadow:var(--shadow-md);}
 
-section.cat{margin-top:44px;}
-.cat-label{display:flex;align-items:center;gap:12px;margin-bottom:18px;}
-.cat-label::after{content:"";flex:1;height:1px;background:var(--border-subtle);}
+/* ===== BENTO ===== */
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;grid-auto-rows:132px;
+  grid-auto-flow:row dense;margin-top:40px;}
+@media(min-width:680px){.grid{grid-template-columns:repeat(4,1fr);grid-auto-rows:150px;gap:16px;}}
+.card.s-wide{grid-column:span 2;}
+.card.s-tall{grid-row:span 2;}
+.card.s-hero{grid-column:span 2;grid-row:span 2;}
 
-.grid{display:grid;grid-template-columns:1fr;gap:16px;}
-@media(min-width:560px){.grid{grid-template-columns:1fr 1fr;}}
-
-.card{position:relative;display:flex;align-items:center;gap:18px;text-decoration:none;color:inherit;
-  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px 22px;
-  box-shadow:var(--shadow-sm);transition:transform .18s ease,border-color .18s,box-shadow .18s;overflow:hidden;}
+.card{position:relative;display:flex;flex-direction:column;justify-content:space-between;gap:10px;
+  text-decoration:none;color:inherit;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r-lg);padding:16px 18px;box-shadow:var(--shadow-sm);overflow:hidden;
+  transition:transform .18s ease,border-color .18s,box-shadow .18s;}
 .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--app-color,var(--accent));}
 .card:hover{transform:translateY(-3px);border-color:var(--app-color,var(--accent));box-shadow:var(--shadow-lg);}
-.card.soon{opacity:.5;pointer-events:none;}
+.card.soon{opacity:.55;pointer-events:none;}
 
-.ic{flex:none;width:56px;height:56px;border-radius:14px;background:var(--surface-2);overflow:hidden;
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+.ic{flex:none;width:44px;height:44px;border-radius:12px;background:var(--surface-2);overflow:hidden;
   border:1px solid var(--border-subtle);display:grid;place-items:center;}
 .ic img{width:100%;height:100%;object-fit:cover;display:block;}
 .ic .fallback{width:100%;height:100%;display:grid;place-items:center;font-family:var(--font-mono);
-  font-weight:600;font-size:22px;color:#fff;background:var(--app-color,var(--accent));}
+  font-weight:600;font-size:18px;color:#fff;background:var(--app-color,var(--accent));}
+.s-hero .ic{width:58px;height:58px;border-radius:15px;}
+.s-hero .ic .fallback{font-size:24px;}
 
-.txt{min-width:0;flex:1;}
-.name{font-weight:600;font-size:18px;letter-spacing:-.01em;display:flex;align-items:center;gap:8px;}
-.tag{color:var(--text-muted);font-size:13.5px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cat{font-family:var(--font-mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--text-subtle);padding-top:4px;white-space:nowrap;}
+.txt{min-width:0;}
+.name{font-weight:600;font-size:16px;letter-spacing:-.01em;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.s-hero .name{font-size:23px;}
+.tag{color:var(--text-muted);font-size:12.5px;margin-top:3px;line-height:1.45;
+  overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.s-hero .tag{font-size:14px;-webkit-line-clamp:3;}
 .badge{font-family:var(--font-mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
   background:var(--surface-3);color:var(--text-subtle);padding:2px 7px;border-radius:999px;}
-.arrow{flex:none;color:var(--text-subtle);font-size:18px;transition:transform .18s,color .18s;}
-.card:hover .arrow{color:var(--app-color,var(--accent));transform:translateX(3px);}
 
-footer{margin-top:56px;padding-top:22px;border-top:1px solid var(--border-subtle);
+footer{margin-top:48px;padding-top:22px;border-top:1px solid var(--border-subtle);
   display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
 footer .ft a{color:var(--text-muted);text-decoration:none;}
 footer .ft a:hover{color:var(--accent);}
@@ -102,11 +115,12 @@ footer .ft a:hover{color:var(--accent);}
 <body>
 <div class="wrap">
   <header>
-    <div>
-      <div class="eyebrow">chopper090 · workspace</div>
-      <h1>Le mie app</h1>
-      <p class="sub">Tutte in un posto. Ogni app è indipendente: si apre dal suo indirizzo e si aggiorna per conto suo.</p>
+    <div class="head-text">
+      <div class="eyebrow">workspace</div>
+      <h1>CHOPPER</h1>
+      <p class="sub">Le mie app, tutte in un posto. Ogni app è indipendente: si apre dal suo indirizzo e si aggiorna per conto suo.</p>
     </div>
+    <img class="mascot" src="body.png" alt="" aria-hidden="true">
     <button class="theme-toggle" id="themeBtn" title="Cambia tema" aria-label="Cambia tema">◐</button>
   </header>
 
@@ -119,19 +133,24 @@ footer .ft a:hover{color:var(--accent);}
 </div>
 
 <script>
-/* ===== TOC: helper · card · enrich(da manifest) · render · tema · sw ===== */
+/* ===== TOC: helper · card(bento) · enrich(da manifest) · render · tema · sw ===== */
 var content = document.getElementById('content');
+var SIZES = {sm:1, wide:1, tall:1, hero:1}; // taglie ammesse per il bento
 
 function el(tag, cls, txt){ var e=document.createElement(tag); if(cls)e.className=cls; if(txt!=null)e.textContent=txt; return e; }
 function appUrl(s){ return './' + s + '/'; }
 
 function cardEl(app){
-  var a = el('a', 'card' + (app.soon ? ' soon' : ''));
+  var size = SIZES[app.size] ? app.size : 'sm';
+  var a = el('a', 'card s-' + size + (app.soon ? ' soon' : ''));
   a.href = app.soon ? '#' : appUrl(app.slug);
   if(app.color) a.style.setProperty('--app-color', app.color);
 
+  var top = el('div','top');
   var ic = el('div','ic');
   ic.appendChild(el('div','fallback', (app.name||app.slug).slice(0,1).toUpperCase()));
+  top.appendChild(ic);
+  top.appendChild(el('span','cat', app._cat || ''));
 
   var txt = el('div','txt');
   var name = el('div','name');
@@ -141,9 +160,8 @@ function cardEl(app){
   var tag = el('div','tag', app.tagline || '');
   txt.appendChild(name); txt.appendChild(tag);
 
-  a.appendChild(ic);
+  a.appendChild(top);
   a.appendChild(txt);
-  a.appendChild(el('div','arrow', app.soon ? '' : '→'));
 
   a._app = app; a._ic = ic; a._nameText = nameText; a._tag = tag;
   return a;
@@ -174,18 +192,16 @@ function enrich(card){
 
 function render(data){
   content.innerHTML = '';
+  var grid = el('div','grid');
   var total = 0;
   (data.categories||[]).forEach(function(cat){
-    var sec = el('section','cat');
-    sec.appendChild(el('div','cat-label', cat.label));
-    var grid = el('div','grid');
     (cat.apps||[]).forEach(function(app){
+      app._cat = cat.label;
       var c = cardEl(app); grid.appendChild(c); enrich(c);
       if(!app.soon) total++;
     });
-    sec.appendChild(grid);
-    content.appendChild(sec);
   });
+  content.appendChild(grid);
   document.getElementById('count').textContent = total + ' app';
 }
 

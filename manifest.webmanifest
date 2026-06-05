@@ -1,7 +1,7 @@
 {
-  "version": "1.0.0",
-  "name": "chopper090 — le mie app",
-  "short_name": "Le mie app",
+  "version": "1.2.0",
+  "name": "CHOPPER — le mie app",
+  "short_name": "CHOPPER",
   "description": "Launcher di tutte le mie app: chitarra, home restaurant, tool. Ogni app resta indipendente.",
   "lang": "it",
   "start_url": "./",
