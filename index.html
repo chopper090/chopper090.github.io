@@ -10,7 +10,10 @@
 <!-- anti-FOUC: tema prima del primo paint -->
 <script>(function(){try{var t=localStorage.getItem('hub.theme');
   if(t!=='light'&&t!=='dark')t=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
-  document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+  var d=document.documentElement;
+  d.setAttribute('data-theme',t);
+  d.style.colorScheme=t; /* opt-out dal force-dark del browser: niente shift verso l'ocra in chiaro */
+}catch(e){}})();</script>
 
 <!-- PWA -->
 <link rel="manifest" href="manifest.webmanifest">
@@ -59,9 +62,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-ui);font-size
 
 header{position:relative;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;}
 .head-text{position:relative;z-index:1;max-width:62%;}
-.mascot{position:absolute;right:8px;bottom:-8px;height:142px;width:auto;z-index:0;pointer-events:none;
+.mascot{position:absolute;right:96px;bottom:-8px;height:142px;width:auto;z-index:0;pointer-events:none;
   -webkit-user-select:none;user-select:none;filter:drop-shadow(0 10px 20px rgba(20,18,12,.20));}
-@media(max-width:560px){.head-text{max-width:58%;}.mascot{height:104px;right:0;bottom:-4px;}}
+@media(min-width:900px){.mascot{right:150px;}}
+@media(max-width:560px){.head-text{max-width:58%;}.mascot{height:104px;right:8px;bottom:-4px;}}
 .eyebrow{margin-bottom:12px;color:var(--accent);}
 h1{font-family:var(--font-mono);font-weight:700;font-size:clamp(34px,6vw,52px);line-height:1;
   letter-spacing:.04em;text-transform:uppercase;}
@@ -227,7 +231,7 @@ footer .ft a:hover{color:var(--accent);}
     <div class="head-text">
       <div class="eyebrow">workspace</div>
       <h1>CHOPPER</h1>
-      <p class="sub">Le mie app, tutte in un posto. Ogni app è indipendente: si apre dal suo indirizzo e si aggiorna per conto suo.</p>
+      <p class="sub">Tutte le mie Rumble Ball, ogni Rumble un'App per sbloccare nuovi poteri.</p>
     </div>
     <img class="mascot" src="body.png" alt="" aria-hidden="true">
     <div class="head-actions">
@@ -671,6 +675,7 @@ fetch('apps.json', {cache:'no-cache'}).then(function(r){ return r.json(); }).the
 var btn=document.getElementById('themeBtn');
 function applyTheme(){
   var dark=document.documentElement.getAttribute('data-theme')==='dark';
+  document.documentElement.style.colorScheme = dark ? 'dark' : 'light'; /* coerente col tema scelto */
   btn.textContent = dark ? '☀' : '☾';
   document.getElementById('metaTheme').setAttribute('content', dark ? '#15171C' : '#F6F4EE');
 }
