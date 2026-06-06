@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>CHOPPER</title>
-<meta name="theme-color" id="metaTheme" content="#FFFFFF">
+<meta name="theme-color" id="metaTheme" content="#FBF6EA">
 <meta name="robots" content="noindex">
 <link rel="icon" href="apple-touch-icon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -17,19 +17,21 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@600;700&family=Inter:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Hanken+Grotesk:wght@500;600;700&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
 
 <style>
 :root{
-  --bg:#F6F4EE; --surface:#FFFFFF; --border:#DDD7C7; --border-strong:#C5BDA6;
-  --text:#1A1D24; --text-muted:#5B626E; --accent:#C15F3C; --bar:rgba(255,255,255,.86);
-  --shadow:0 1px 3px rgba(20,18,12,.10);
-  --font-mono:"JetBrains Mono",ui-monospace,Menlo,monospace; --font-ui:"Inter",-apple-system,system-ui,sans-serif;
+  --bg:#F1E7D2; --surface:#FBF6EA; --border:#E0CFA6; --border-strong:#CDB585;
+  --text:#2B2114; --text-muted:#6E6047; --accent:#C5384A; --bar:rgba(251,246,234,.88);
+  --shadow:0 1px 3px rgba(60,42,18,.12);
+  --font-mono:"Space Mono",ui-monospace,Menlo,monospace;
+  --font-display:"Bricolage Grotesque",-apple-system,system-ui,sans-serif;
+  --font-ui:"Hanken Grotesk",-apple-system,system-ui,sans-serif;
 }
 :root[data-theme="dark"]{
-  --bg:#15171C; --surface:#1C1F26; --border:#2F3540; --border-strong:#434A57;
-  --text:#ECE9E0; --text-muted:#A8AEBA; --accent:#E07A52; --bar:rgba(28,31,38,.86);
-  --shadow:0 1px 3px rgba(0,0,0,.40);
+  --bg:#12161D; --surface:#1A1F28; --border:#2D3744; --border-strong:#46525F;
+  --text:#F3EAD6; --text-muted:#AEB6C2; --accent:#E8556A; --bar:rgba(26,31,40,.88);
+  --shadow:0 1px 3px rgba(0,0,0,.42);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
@@ -40,19 +42,19 @@ body{display:flex;flex-direction:column;background:var(--bg);color:var(--text);
   min-height:calc(50px + env(safe-area-inset-top));
   padding:calc(env(safe-area-inset-top) + 7px) 12px 7px 12px;
   background:var(--bar);-webkit-backdrop-filter:saturate(1.4) blur(12px);backdrop-filter:saturate(1.4) blur(12px);
-  border-bottom:1px solid var(--border);}
+  border-bottom:1.5px solid var(--border-strong);}
 .cback{display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:var(--text);
-  padding:6px 13px 6px 9px;border-radius:999px;border:1px solid var(--border);background:var(--surface);
-  box-shadow:var(--shadow);min-height:36px;transition:border-color .15s,transform .15s,box-shadow .15s;}
-.cback:hover{border-color:var(--accent);transform:translateX(-1px);}
+  padding:6px 13px 6px 9px;border-radius:999px;border:1.5px solid var(--border-strong);background:var(--surface);
+  box-shadow:var(--shadow);min-height:36px;transition:border-color .15s,transform .15s,box-shadow .15s,color .15s;}
+.cback:hover{border-color:var(--accent);transform:translateX(-1px);color:var(--accent);}
 .cback:active{transform:translateX(0);}
 .cback .chev{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;}
 .cmark{width:24px;height:24px;border-radius:7px;object-fit:cover;display:block;background:var(--accent);}
-.cword{font-family:var(--font-mono);font-weight:700;font-size:12.5px;letter-spacing:.13em;}
+.cword{font-family:var(--font-display);font-weight:800;font-size:13.5px;letter-spacing:.05em;text-transform:uppercase;}
 .capp{flex:1;min-width:0;font-weight:600;font-size:14px;color:var(--text-muted);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;padding-left:4px;}
 .copen{flex:none;display:grid;place-items:center;width:36px;height:36px;border-radius:10px;
-  border:1px solid var(--border);background:var(--surface);color:var(--text-muted);text-decoration:none;
+  border:1.5px solid var(--border-strong);background:var(--surface);color:var(--text-muted);text-decoration:none;
   transition:border-color .15s,color .15s;}
 .copen:hover{border-color:var(--accent);color:var(--accent);}
 .copen svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
@@ -62,7 +64,7 @@ iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;b
 .loading{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;color:var(--text-muted);
   font-size:13.5px;transition:opacity .3s;text-align:center;padding:24px;}
 .loading.hide{opacity:0;}
-.loading a{pointer-events:auto;color:var(--accent);text-decoration:none;display:inline-block;margin-top:10px;font-weight:600;}
+.loading a{pointer-events:auto;color:var(--accent);text-decoration:none;display:inline-block;margin-top:10px;font-weight:700;}
 .loading a:hover{text-decoration:underline;}
 .spin{width:28px;height:28px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--accent);
   animation:spin .8s linear infinite;margin:0 auto 12px;}
@@ -99,7 +101,6 @@ iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;b
 (function(){
   function dash(){ location.replace('./'); }
   var slug = (new URLSearchParams(location.search).get('app') || '').trim();
-  // slug deve essere un token semplice: garantisce un percorso same-origin (niente URL esterni / traversal)
   if(!/^[a-z0-9][a-z0-9_-]*$/i.test(slug)) return dash();
 
   var frame=document.getElementById('frame'), capp=document.getElementById('capp'),
@@ -107,31 +108,28 @@ iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;b
       loadtext=document.getElementById('loadtext'), loadlink=document.getElementById('loadlink');
 
   function setName(n){ capp.textContent=n||''; document.title=(n?n+' · ':'')+'CHOPPER'; }
-  var target = slug + '/';                 // → /<slug>/ (relativo a /app.html, same-origin)
+  var target = slug + '/';
   copen.href = target; loadlink.href = target; setName(slug);
 
-  // tema della barra coerente con la dash
   try{ var dark=document.documentElement.getAttribute('data-theme')==='dark';
-    document.getElementById('metaTheme').setAttribute('content', dark?'#1C1F26':'#FFFFFF'); }catch(e){}
+    document.getElementById('metaTheme').setAttribute('content', dark?'#1A1F28':'#FBF6EA'); }catch(e){}
 
-  // fallback se la cornice non carica (app lenta o non incorniciabile)
   var to=setTimeout(function(){ loadtext.textContent='Ci sta mettendo un po’…'; loadlink.hidden=false; }, 6000);
   frame.addEventListener('load', function(){
     clearTimeout(to); loading.classList.add('hide');
     setTimeout(function(){ loading.style.display='none'; }, 350);
   });
-  frame.src = target;                       // carica subito l'app
+  frame.src = target;
 
-  // nome dell'app (apps.json → manifest live), best-effort; redirect se lo slug non è di CHOPPER
   fetch('apps.json',{cache:'no-cache'}).then(function(r){ return r.json(); }).then(function(data){
     var apps = Array.isArray(data.apps) ? data.apps
              : (data.categories||[]).reduce(function(o,c){ return o.concat(c.apps||[]); }, []);
     var meta = apps.filter(function(a){ return a && a.slug===slug; })[0];
-    if(!meta) return dash();                // slug non presente in CHOPPER → torna alla dash
+    if(!meta) return dash();
     setName(meta.name||slug);
     fetch(target+'manifest.webmanifest',{cache:'no-cache'}).then(function(r){ return r.json(); })
       .then(function(m){ setName(m.short_name||m.name||meta.name||slug); }).catch(function(){});
-  }).catch(function(){ /* offline: lo slug è già validato come percorso same-origin */ });
+  }).catch(function(){ /* offline */ });
 })();
 </script>
 </body>
