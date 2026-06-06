@@ -124,12 +124,12 @@ body:not(.editing) .card.soon{pointer-events:none;}
 
 /* ===== app nascoste ===== */
 .card.is-hidden{display:none;}
-body.editing .card.is-hidden,
+body.editing .card.is-hidden{display:flex;}
 body.show-hidden .card.is-hidden{display:flex;opacity:.5;}
-body.editing .card.is-hidden:hover,
-body.show-hidden .card.is-hidden:hover{opacity:.78;}
+body.show-hidden .card.is-hidden:hover{opacity:.8;}
+
+/* badge "nascosta" nella vista "vedi tutto" */
 .hidden-flag{display:none;}
-body.editing .card.is-hidden .hidden-flag,
 body.show-hidden .card.is-hidden .hidden-flag{
   display:inline-flex;align-items:center;gap:4px;position:absolute;z-index:4;left:9px;bottom:8px;
   font-family:var(--font-mono);font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;
@@ -137,6 +137,27 @@ body.show-hidden .card.is-hidden .hidden-flag{
   border:1px solid var(--border);padding:2px 7px;border-radius:999px;
   -webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);}
 .hidden-flag .ico{width:11px;height:11px;}
+
+/* occhio per nascondere (in modifica, app visibile) */
+.hide-btn{display:none;}
+body.editing .card:not(.is-hidden) .hide-btn{
+  display:grid;place-items:center;position:absolute;top:6px;right:38px;z-index:5;
+  width:28px;height:28px;border-radius:9px;border:1px solid var(--border);cursor:pointer;
+  background:color-mix(in srgb,var(--surface) 84%,transparent);
+  -webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);color:var(--text);box-shadow:var(--shadow-sm);}
+body.editing .card:not(.is-hidden) .hide-btn .ico{width:15px;height:15px;}
+body.editing .card:not(.is-hidden) .hide-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+/* occhio sbarrato grande (in modifica, app nascosta) → clic per riattivare */
+.hide-overlay{display:none;}
+body.editing .card.is-hidden .hide-overlay{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;
+  position:absolute;inset:0;z-index:6;cursor:pointer;border-radius:inherit;text-align:center;padding:8px;
+  color:var(--text-muted);background:color-mix(in srgb,var(--surface) 62%,transparent);
+  -webkit-backdrop-filter:blur(1.5px);backdrop-filter:blur(1.5px);}
+body.editing .card.is-hidden .hide-overlay .ico{width:clamp(32px,40%,68px);height:auto;stroke-width:1.7;opacity:.9;}
+body.editing .card.is-hidden .hide-overlay .lbl{font-family:var(--font-mono);font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;}
+body.editing .card.is-hidden .hide-overlay:hover{color:var(--accent);background:color-mix(in srgb,var(--surface) 50%,transparent);}
 
 /* tasto "vedi tutto" */
 .showall{display:flex;justify-content:center;margin:22px auto 0;}
@@ -379,9 +400,6 @@ footer .ft a:hover{color:var(--accent);}
     <div class="ctl-label">Vista</div>
     <div class="seg" id="segView"></div>
   </div>
-  <div class="ctl">
-    <button class="btn" id="hideBtn" type="button" style="width:100%;justify-content:center;"></button>
-  </div>
 </div>
 
 <div class="toast" id="toast" hidden></div>
@@ -430,7 +448,7 @@ var drag = null;         // stato drag/resize
 var $ = function(id){ return document.getElementById(id); };
 var editBtn,themeBtn,editbar,colsSeg,resetBtn,exportBtn,doneBtn,fxBtn,
     sheet,sheetBack,sheetIc,sheetTitle,sheetClose,segW,segH,segBg,segView,segOp,toastEl,countEl,
-    showallWrap,showallBtn,hideBtn;
+    showallWrap,showallBtn;
 
 /* ---- helper ---- */
 function el(tag, cls, html){ var e=document.createElement(tag); if(cls)e.className=cls; if(html!=null)e.innerHTML=html; return e; }
@@ -595,12 +613,21 @@ function cardEl(slug){
   var setBtn=el('span','settings-btn', icoSvg('sliders')); setBtn.setAttribute('role','button');
   setBtn.setAttribute('aria-label','Personalizza'); setBtn.setAttribute('tabindex','-1');
   var rsz=el('span','resize'); rsz.setAttribute('role','button'); rsz.setAttribute('aria-label','Ridimensiona'); rsz.setAttribute('tabindex','-1');
+  var hideBtn=el('span','hide-btn', icoSvg('eye')); hideBtn.setAttribute('role','button');
+  hideBtn.setAttribute('aria-label','Nascondi dalla dash'); hideBtn.setAttribute('title','Nascondi dalla dash'); hideBtn.setAttribute('tabindex','-1');
+  var hideOv=el('span','hide-overlay', icoSvg('eyeOff')+'<span class="lbl">tocca per mostrare</span>'); hideOv.setAttribute('role','button');
+  hideOv.setAttribute('aria-label','Mostra nella dash'); hideOv.setAttribute('title','Mostra nella dash');
 
   a.appendChild(bg); a.appendChild(scrim); a.appendChild(top); a.appendChild(txt);
   a.appendChild(grip); a.appendChild(setBtn); a.appendChild(rsz); a.appendChild(hflag);
+  a.appendChild(hideBtn); a.appendChild(hideOv);
   a._ic=ic; a._nameText=nameText; a._tag=tag; a._bg=bg; a._shotImg=shot;
 
   setBtn.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); openSheet(slug); });
+  hideBtn.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+  hideBtn.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); toggleHidden(slug); });
+  hideOv.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+  hideOv.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); toggleHidden(slug); });
   rsz.addEventListener('pointerdown', function(e){ onResizeDown(e, a, slug); });
   a.addEventListener('pointerdown', function(e){ onCardDown(e, a, slug); });
   a.addEventListener('click', function(e){
@@ -839,7 +866,6 @@ function openSheet(slug){
   if(card&&card._iconSrc){ var im=new Image(); im.src=card._iconSrc; im.alt=''; sheetIc.appendChild(im); }
   else sheetIc.appendChild(el('div','fallback',(meta.name||slug).slice(0,1).toUpperCase()));
   buildSheetSegs(slug);
-  buildHideBtn(slug);
   sheetBack.hidden=false; sheet.hidden=false;
   requestAnimationFrame(function(){ sheet.classList.add('open'); sheetBack.classList.add('open'); });
 }
@@ -904,19 +930,13 @@ function setShowHidden(on){
   buildOverlay(); relayout();
   updateShowAllBtn();
 }
-function buildHideBtn(slug){
-  if(!hideBtn) return;
-  var hid=isHidden(slug);
-  hideBtn.className='btn'+(hid?' solid':' ghost danger');
-  hideBtn.innerHTML=icoSvg(hid?'eye':'eyeOff')+'<span>'+(hid?'Mostra nella dash':'Nascondi dalla dash')+'</span>';
-}
 function toggleHidden(slug){
   var p=P[slug]; if(!p) return;
   p.hidden=!p.hidden;
   saveState();
   var card=cardBySlug(slug); if(card) refreshCard(card);
   buildOverlay(); relayout();
-  updateCount(); updateShowAllBtn(); buildHideBtn(slug);
+  updateCount(); updateShowAllBtn();
   toast(p.hidden ? 'App nascosta dalla dash' : 'App di nuovo visibile');
 }
 
@@ -967,7 +987,7 @@ function initRefs(){
   resetBtn=$('resetBtn'); exportBtn=$('exportBtn'); doneBtn=$('doneBtn'); fxBtn=$('fxBtn');
   sheet=$('sheet'); sheetBack=$('sheetBack'); sheetIc=$('sheetIc'); sheetTitle=$('sheetTitle');
   sheetClose=$('sheetClose'); segW=$('segW'); segH=$('segH'); segBg=$('segBg'); segOp=$('segOp'); segView=$('segView'); toastEl=$('toast');
-  showallWrap=$('showallWrap'); showallBtn=$('showallBtn'); hideBtn=$('hideBtn');
+  showallWrap=$('showallWrap'); showallBtn=$('showallBtn');
 }
 function wire(){
   $('colsIcoSlot').insertAdjacentHTML('afterbegin', icoSvg('columns'));
@@ -982,7 +1002,6 @@ function wire(){
   exportBtn.addEventListener('click', exportJson);
   fxBtn.addEventListener('click', toggleFx);
   showallBtn.addEventListener('click', function(){ setShowHidden(!showHidden); });
-  hideBtn.addEventListener('click', function(){ if(currentSlug) toggleHidden(currentSlug); });
   sheetClose.addEventListener('click', closeSheet);
   sheetBack.addEventListener('click', closeSheet);
   document.addEventListener('keydown', function(e){
