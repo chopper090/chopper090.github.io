@@ -2,23 +2,24 @@
   "_nota": "Lista degli URL + categoria + taglia. Nome/icona/colore/screenshot vengono letti a runtime dal manifest live di ogni app (auto-sync). 'size' controlla il tile bento: hero (2x2) · wide (2x1) · tall (1x2) · sm (1x1, default). Campi opzionali per-app: cols (blocchi X 1-4) · rows (blocchi Y 1-3) · bg (screenshot|synthetic|solid|gradient|none) · view (standard|compact|icon|detail). In alternativa al formato 'categories' si può usare il formato flat con 'cat' su ogni app (vedi export dall'editor: matita in alto a destra). L'ordine qui = l'ordine nella griglia. Aggiungere un'app = una riga qui.",
   "categories": [
     {
-      "label": "Chitarra",
+      "label": "Musica",
       "apps": [
         { "slug": "nemo",    "name": "Nemo",      "tagline": "Fretboard & ear training",     "color": "#5840D7", "size": "hero" },
         { "slug": "lucille", "name": "Lucille",   "tagline": "Pentatonica · guida blues",     "color": "#E8A838", "size": "sm" }
       ]
     },
     {
-      "label": "Home restaurant",
+      "label": "Cucina",
       "apps": [
         { "slug": "umami",   "name": "Umami",     "tagline": "Matrice dei sapori",            "color": "#C2611F", "size": "tall" },
         { "slug": "cambusa", "name": "Cambusa",   "tagline": "Gestione · food cost · HACCP",  "color": "#3B5BDB", "size": "sm" },
-        { "slug": "lentini", "name": "DaLentini", "tagline": "Menu & brand",                  "color": "#C4A86A", "size": "sm" },
+        { "slug": "carta",     "name": "Carta",     "tagline": "Generatore di menu",            "color": "#2A2E32", "size": "wide" },
+        { "slug": "dalentini", "name": "DaLentini", "tagline": "Identità · home restaurant",    "color": "#C4A86A", "size": "sm" },
         { "slug": "DaLentini_WEB", "name": "DaLentini", "tagline": "Il sito vetrina",          "color": "#C8A35E", "size": "wide" }
       ]
     },
     {
-      "label": "Tools",
+      "label": "Strumenti",
       "apps": [
         { "slug": "argo",    "name": "Argo",      "tagline": "Obiettivi, note, spese",        "color": "#3B5BDB", "size": "sm" },
         { "slug": "glaido",  "name": "Glaido",    "tagline": "In arrivo",                     "color": "#7B8290", "size": "wide", "soon": true }
