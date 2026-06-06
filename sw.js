@@ -1,9 +1,10 @@
 // chopper090 hub — service worker.
 // Intercetta SOLO i file dell'hub (root). Le sotto-app (/nemo/, /umami/, ...) hanno
 // il loro service worker con scope più specifico → restano indipendenti, mai toccate qui.
-const CACHE = 'chopper090.github.io-v1.7.2';
+const CACHE = 'chopper090.github.io-v1.8.0';
 const SHELL = ['./', './index.html', './app.html', './apps.json', './manifest.webmanifest',
-  './icon-192.png', './icon-512.png', './icon-512-maskable.png', './apple-touch-icon.png', './body.png'];
+  './icon-192.png', './icon-512.png', './icon-512-maskable.png', './apple-touch-icon.png',
+  './body.png', './jolly.png', './hat.png'];
 
 self.addEventListener('install', e => {
   self.skipWaiting();
@@ -19,7 +20,8 @@ self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   const p = new URL(e.request.url).pathname;
   const isHub = p === '/' || p === '/index.html' || p === '/app.html' || p === '/apps.json' ||
-    p === '/manifest.webmanifest' || p.startsWith('/icon-') || p === '/apple-touch-icon.png' || p === '/body.png';
+    p === '/manifest.webmanifest' || p.startsWith('/icon-') || p === '/apple-touch-icon.png' ||
+    p === '/body.png' || p === '/jolly.png' || p === '/hat.png';
   if (!isHub) return; // non intercettare le app: hanno il loro sw
 
   const fresh = p === '/' || p === '/index.html' || p === '/app.html' || p === '/apps.json';
