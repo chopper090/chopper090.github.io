@@ -13,7 +13,8 @@
       "apps": [
         { "slug": "umami",   "name": "Umami",     "tagline": "Matrice dei sapori",            "color": "#C2611F", "size": "tall" },
         { "slug": "cambusa", "name": "Cambusa",   "tagline": "Gestione · food cost · HACCP",  "color": "#3B5BDB", "size": "sm" },
-        { "slug": "lentini", "name": "DaLentini", "tagline": "Menu & brand",                  "color": "#C4A86A", "size": "wide" }
+        { "slug": "lentini", "name": "DaLentini", "tagline": "Menu & brand",                  "color": "#C4A86A", "size": "sm" },
+        { "slug": "DaLentini_WEB", "name": "DaLentini", "tagline": "Il sito vetrina",          "color": "#C8A35E", "size": "wide" }
       ]
     },
     {
