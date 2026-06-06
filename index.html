@@ -172,6 +172,20 @@ body:not(.editing) .card.soon{pointer-events:none;}
 .card.v-detail .tag{-webkit-line-clamp:4;}
 .card.big.v-detail .tag{-webkit-line-clamp:6;}
 
+/* ===== animazioni ===== */
+@keyframes tileIn{from{opacity:0;transform:translateY(12px) scale(.96);}to{opacity:1;transform:none;}}
+@keyframes meshFloat{0%,100%{transform:scale(1.06) translate(0,0);}50%{transform:scale(1.14) translate(-2.5%,-2%);}}
+body:not(.anim-off) .grid .card{animation:tileIn .5s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0)*45ms);}
+.card-bg .shot{transition:transform .6s cubic-bezier(.2,.8,.2,1);}
+body:not(.editing):not(.anim-off) .card:hover .card-bg .shot{transform:scale(1.08);}
+body:not(.editing):not(.anim-off) .card[data-bg="synthetic"]:hover .shot.synth{transform:scale(1.12) rotate(2deg);}
+body:not(.anim-off) .card[data-bg="mesh"] .card-bg{animation:meshFloat 16s ease-in-out infinite;}
+body:not(.editing) .card:active{transform:scale(.985);}
+@media(prefers-reduced-motion:reduce){
+  body .card{animation:none!important;}
+  body .card-bg,body .card-bg .shot{animation:none!important;transition:none!important;}
+}
+
 /* ===== modalità modifica ===== */
 body.editing .card{cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none;
   border-style:solid;box-shadow:var(--shadow-md);}
@@ -301,6 +315,7 @@ footer .ft a:hover{color:var(--accent);}
   </div>
   <div class="editbar-sep"></div>
   <div class="editbar-actions">
+    <button class="btn" id="fxBtn"></button>
     <button class="btn ghost danger" id="resetBtn"></button>
     <button class="btn" id="exportBtn"></button>
     <button class="btn solid" id="doneBtn"></button>
@@ -333,6 +348,10 @@ footer .ft a:hover{color:var(--accent);}
     <div class="seg" id="segBg"></div>
   </div>
   <div class="ctl">
+    <div class="ctl-label">Intensità sfondo</div>
+    <div class="seg" id="segOp"></div>
+  </div>
+  <div class="ctl">
     <div class="ctl-label">Vista</div>
     <div class="seg" id="segView"></div>
   </div>
@@ -357,7 +376,8 @@ var ICONS = {
   columns:'<rect x="3.5" y="4" width="6" height="16" rx="1.2"/><rect x="14.5" y="4" width="6" height="16" rx="1.2"/>',
   reset:'<polyline points="1 4 1 10 7 10"/><path d="M3.5 15a9 9 0 1 0 2.1-9.4L1 10"/>',
   download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
-  grip:'<circle cx="9" cy="6" r="1.4"/><circle cx="9" cy="12" r="1.4"/><circle cx="9" cy="18" r="1.4"/><circle cx="15" cy="6" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="15" cy="18" r="1.4"/>'
+  grip:'<circle cx="9" cy="6" r="1.4"/><circle cx="9" cy="12" r="1.4"/><circle cx="9" cy="18" r="1.4"/><circle cx="15" cy="6" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="15" cy="18" r="1.4"/>',
+  spark:'<path d="M12 3l1.6 5.4L19 10l-5.4 1.6L12 17l-1.6-5.4L5 10l5.4-1.6Z"/><path d="M19 14l.6 2L22 16.6l-2.4.6L19 20l-.6-2.4L16 16.6l2.4-.6Z"/>'
 };
 function icoSvg(name, fill){ return '<svg class="ico'+(fill?' fill':'')+'" viewBox="0 0 24 24" aria-hidden="true">'+(ICONS[name]||'')+'</svg>'; }
 
@@ -365,7 +385,7 @@ function icoSvg(name, fill){ return '<svg class="ico'+(fill?' fill':'')+'" viewB
 var LS = 'hub.layout.v2';
 var MIN_COLS = 2, MAX_COLS = 6, MAX_H = 6, MAX_ROWS = 40;
 var SIZE_WH = { hero:[2,2], wide:[2,1], tall:[1,2], sm:[1,1] };
-var BG_TYPES = ['screenshot','synthetic','solid','gradient','none'];
+var BG_TYPES = ['screenshot','synthetic','mesh','solid','gradient','none'];
 var VIEW_TYPES = ['auto','icon','standard','detail','compact'];
 
 var RAW = null;          // apps.json caricato
@@ -373,14 +393,14 @@ var META = {};           // slug -> meta app (name,tagline,color,_cat,soon,...)
 var LIST = [];           // ordine sorgente degli slug
 var cols = 4;            // colonne attive
 var P = {};              // slug -> { x,y,w,h,bg,view }
-var editing = false, currentSlug = null;
+var editing = false, currentSlug = null, fx = true;
 var board, overlay, grid, dropGhost;
 var drag = null;         // stato drag/resize
 
 /* ---- refs ---- */
 var $ = function(id){ return document.getElementById(id); };
-var editBtn,themeBtn,editbar,colsSeg,resetBtn,exportBtn,doneBtn,
-    sheet,sheetBack,sheetIc,sheetTitle,sheetClose,segW,segH,segBg,segView,toastEl,countEl;
+var editBtn,themeBtn,editbar,colsSeg,resetBtn,exportBtn,doneBtn,fxBtn,
+    sheet,sheetBack,sheetIc,sheetTitle,sheetClose,segW,segH,segBg,segView,segOp,toastEl,countEl;
 
 /* ---- helper ---- */
 function el(tag, cls, html){ var e=document.createElement(tag); if(cls)e.className=cls; if(html!=null)e.innerHTML=html; return e; }
@@ -392,7 +412,7 @@ function gapPx(){ return (typeof window!=='undefined' && window.innerWidth && wi
 function computeUnit(width, c, gap){ return Math.max(40, (width-(c-1)*gap)/c); }
 
 function loadState(){ try{ var s=JSON.parse(localStorage.getItem(LS)); if(s&&s.apps&&typeof s.apps==='object') return s; }catch(e){} return null; }
-function saveState(){ try{ localStorage.setItem(LS, JSON.stringify({cols:cols, apps:P})); }catch(e){} }
+function saveState(){ try{ localStorage.setItem(LS, JSON.stringify({cols:cols, fx:fx, apps:P})); }catch(e){} }
 function toast(msg){
   toastEl.textContent=msg; toastEl.hidden=false;
   requestAnimationFrame(function(){ toastEl.classList.add('show'); });
@@ -462,17 +482,21 @@ function placeAll(){
   var local = loadState();
   if(local && local.apps){
     cols = clamp(local.cols||4, MIN_COLS, MAX_COLS);
+    fx = local.fx!==false;
     P = {};
     LIST.forEach(function(slug){ var o=local.apps[slug]; if(o){
       P[slug]={ x:o.x|0, y:o.y|0, w:clamp(o.w||1,1,cols), h:clamp(o.h||1,1,MAX_H),
                 bg: BG_TYPES.indexOf(o.bg)>=0?o.bg:defBg(META[slug]),
-                view: VIEW_TYPES.indexOf(o.view)>=0?o.view:'auto' }; }});
+                view: VIEW_TYPES.indexOf(o.view)>=0?o.view:'auto',
+                op: (o.op==null?null:clamp(o.op,5,100)) }; }});
   } else {
     cols = clamp((RAW&&RAW.grid&&RAW.grid.cols)||4, MIN_COLS, MAX_COLS);
+    fx = !(RAW&&RAW.grid&&RAW.grid.fx===false);
     P = {};
     var hasPos = LIST.some(function(s){ var m=META[s]; return isInt(m.x)&&isInt(m.y)&&m.w&&m.h; });
     if(hasPos) LIST.forEach(function(slug){ var m=META[slug]; if(isInt(m.x)){
-      P[slug]={ x:m.x|0, y:m.y|0, w:clamp(m.w,1,cols), h:clamp(m.h,1,MAX_H), bg:defBg(m), view:defView(m) }; }});
+      P[slug]={ x:m.x|0, y:m.y|0, w:clamp(m.w,1,cols), h:clamp(m.h,1,MAX_H), bg:defBg(m), view:defView(m),
+                op:(m.op==null?null:clamp(m.op,5,100)) }; }});
   }
   fillMissing();   // app senza posizione → auto-place
   sanitize();      // niente sovrapposizioni / fuori griglia
@@ -482,7 +506,7 @@ function fillMissing(){
     if(P[slug]) return;
     var wh=defaultWH(META[slug]); var w=clamp(wh[0],1,cols), h=clamp(wh[1],1,MAX_H);
     var pos=appendPos(w,h,occupancy(null));
-    P[slug]={ x:pos.x, y:pos.y, w:w, h:h, bg:defBg(META[slug]), view:defView(META[slug]) };
+    P[slug]={ x:pos.x, y:pos.y, w:w, h:h, bg:defBg(META[slug]), view:defView(META[slug]), op:null };
   });
 }
 function sanitize(){
@@ -508,12 +532,15 @@ function cardEl(slug){
   var a=el('a','card'); a.dataset.slug=slug; a.draggable=false;
   a.href = meta.soon ? '#' : appUrl(slug);
   if(meta.color) a.style.setProperty('--app-color', meta.color);
+  if(meta.cover) a._cover=meta.cover;
 
   var bg=el('div','card-bg');
   var shot=el('img','shot'); shot.alt=''; shot.draggable=false; shot.setAttribute('aria-hidden','true'); shot.style.display='none';
   shot.addEventListener('error', function(){
     if(shot.classList.contains('synth')){ shot.style.display='none'; return; }
-    if(a._shot){ a._shot=null; applyCardBg(a); } });
+    var s=shot.getAttribute('src');
+    if(s && s===a._cover){ a._cover=null; } else if(a._shot && s===a._shot){ a._shot=null; }
+    applyCardBg(a); });
   bg.appendChild(shot);
   var scrim=el('div','card-scrim');
 
@@ -555,19 +582,26 @@ function applyCardStyle(card){
 function applyCardBg(card){
   var slug=card.dataset.slug, p=P[slug]; if(!p) return;
   var bg=card._bg, img=card._shotImg, type=p.bg;
-  if(type==='screenshot' && !card._shot) type='synthetic';
-  bg.style.background=''; img.style.display='none'; img.className='shot';
+  var src=card._cover||card._shot;            // copertina reale: covers/<slug> oppure screenshot del manifest
+  if(type==='screenshot' && !src) type='synthetic';
+  bg.style.background=''; bg.style.opacity=''; img.style.display='none'; img.style.opacity=''; img.className='shot';
   if(type==='screenshot'){
-    if(img.getAttribute('src')!==card._shot) img.src=card._shot; img.style.display='';
+    if(img.getAttribute('src')!==src) img.src=src; img.style.display='';
   } else if(type==='synthetic'){
     bg.style.background='radial-gradient(135% 135% at 82% 4%, color-mix(in srgb, var(--app-color,var(--accent)) 32%, transparent) 0%, transparent 58%)';
     if(card._iconSrc){ img.className='shot synth'; if(img.getAttribute('src')!==card._iconSrc) img.src=card._iconSrc; img.style.display=''; }
+  } else if(type==='mesh'){
+    bg.style.background='radial-gradient(60% 60% at 18% 16%, color-mix(in srgb,var(--app-color,var(--accent)) 52%,transparent) 0%, transparent 60%),'
+      +'radial-gradient(55% 55% at 86% 10%, color-mix(in srgb,var(--accent) 44%,transparent) 0%, transparent 58%),'
+      +'radial-gradient(72% 72% at 72% 96%, color-mix(in srgb,var(--app-color,var(--accent)) 40%,transparent) 0%, transparent 62%)';
   } else if(type==='solid'){
     bg.style.background='color-mix(in srgb, var(--app-color,var(--accent)) 15%, transparent)';
   } else if(type==='gradient'){
     bg.style.background='linear-gradient(150deg, color-mix(in srgb, var(--app-color,var(--accent)) 42%, transparent) 0%, transparent 70%)';
   }
-  card.classList.toggle('has-bg', type==='screenshot' || type==='synthetic');
+  if(p.op!=null){ bg.style.opacity=String(clamp(p.op,5,100)/100); if(img.style.display!=='none') img.style.opacity='1'; }
+  card.dataset.bg=type;
+  card.classList.toggle('has-bg', type==='screenshot'||type==='synthetic'||type==='mesh');
 }
 function refreshCard(card){ applyCardStyle(card); applyCardBg(card); }
 function cardBySlug(slug){ return grid.querySelector('.card[data-slug="'+slug+'"]'); }
@@ -592,6 +626,14 @@ function enrich(card){
       if(shots.length && shots[0].src) card._shot=resolveAsset(slug, shots[0].src);
       applyCardBg(card);
     }).catch(function(){ applyCardBg(card); });
+}
+
+/* ---- copertina reale: covers/<slug>.png (se il campo 'cover' non è già impostato) ---- */
+function loadCover(card, slug){
+  if(card._cover) return;                       // già nota (campo 'cover' in apps.json)
+  var url='covers/'+slug+'.png', im=new Image(); im.alt=''; im.draggable=false;
+  im.onload=function(){ card._cover=url; applyCardBg(card); };
+  im.src=url;                                   // se manca, resta lo sfondo sintetico
 }
 
 /* ---- paint + relayout (celle quadrate) ---- */
@@ -623,8 +665,8 @@ function render(data){
   grid.innerHTML='';
   dropGhost=el('div','drop-ghost'); grid.appendChild(dropGhost);
   var total=0;
-  LIST.forEach(function(slug){ var c=cardEl(slug); grid.appendChild(c); refreshCard(c); enrich(c); if(!META[slug].soon) total++; });
-  buildOverlay(); relayout();
+  LIST.forEach(function(slug,idx){ var c=cardEl(slug); c.style.setProperty('--i', idx); grid.appendChild(c); refreshCard(c); enrich(c); loadCover(c,slug); if(!META[slug].soon) total++; });
+  buildOverlay(); relayout(); applyFx();
   countEl.textContent = total+' app';
 }
 
@@ -741,9 +783,12 @@ function buildSheetSegs(slug){
   buildSeg(segW, ws, p.w, function(v){ setProp(slug,'w',v); });
   buildSeg(segH, hs, p.h, function(v){ setProp(slug,'h',v); });
   buildSeg(segBg, [
-    {val:'screenshot',label:'Anteprima'},{val:'synthetic',label:'Sintetico'},
+    {val:'screenshot',label:'Anteprima'},{val:'synthetic',label:'Sintetico'},{val:'mesh',label:'Mesh'},
     {val:'solid',label:'Tinta'},{val:'gradient',label:'Gradiente'},{val:'none',label:'Nessuno'}
   ], p.bg, function(v){ setProp(slug,'bg',v); });
+  buildSeg(segOp, [
+    {val:null,label:'Auto'},{val:25,label:'Tenue'},{val:45,label:'Media'},{val:70,label:'Forte'},{val:95,label:'Max'}
+  ], (p.op==null?null:p.op), function(v){ setProp(slug,'op',v); });
   buildSeg(segView, [
     {val:'auto',label:'Auto'},{val:'icon',label:'Icona'},{val:'standard',label:'Standard'},
     {val:'detail',label:'Dettaglio'},{val:'compact',label:'Compatta'}
@@ -800,18 +845,26 @@ function setEditing(on){
   buildOverlay(); relayout();
 }
 
+/* ---- animazioni on/off ---- */
+function applyFx(){
+  document.body.classList.toggle('anim-off', !fx);
+  if(fxBtn){ fxBtn.classList.toggle('on', fx); fxBtn.innerHTML=icoSvg('spark')+'<span>Animazioni</span>'; }
+}
+function toggleFx(){ fx=!fx; saveState(); applyFx(); }
+
 /* ---- export apps.json (formato v2 con posizioni) + reset ---- */
 function buildConfig(){
   var apps=LIST.map(function(slug){
     var m=META[slug], p=P[slug], o={slug:slug};
     if(m.name) o.name=m.name; if(m.tagline) o.tagline=m.tagline;
-    if(m.color) o.color=m.color; if(m._cat) o.cat=m._cat;
+    if(m.color) o.color=m.color; if(m._cat) o.cat=m._cat; if(m.cover) o.cover=m.cover;
     o.x=p.x; o.y=p.y; o.w=p.w; o.h=p.h; o.bg=p.bg; o.view=p.view||'auto';
+    if(p.op!=null) o.op=p.op;
     if(m.soon) o.soon=true; return o;
   });
   return {
-    "_nota":"Esportato da CHOPPER. Griglia a posizionamento libero (celle quadrate). 'grid.cols' = numero colonne. Per ogni app: x,y (cella, 0-based) + w,h (blocchi) + bg(screenshot|synthetic|solid|gradient|none) + view(auto|icon|standard|detail|compact). name/tagline/color/cat opzionali (auto-letti dal manifest live). Compatibile col vecchio formato 'categories'.",
-    "grid":{"cols":cols},
+    "_nota":"Esportato da CHOPPER. Griglia a posizionamento libero (celle quadrate). grid.cols = colonne; grid.fx = animazioni on/off. Per ogni app: x,y (cella, 0-based) + w,h (blocchi) + bg(screenshot|synthetic|mesh|solid|gradient|none) + view(auto|icon|standard|detail|compact) + op (intensita sfondo 5-100, opzionale). La copertina 'screenshot' usa covers/<slug>.png se presente, altrimenti gli screenshots del manifest, altrimenti l'anteprima sintetica. name/tagline/color/cat opzionali. Compatibile col vecchio formato 'categories'.",
+    "grid":{"cols":cols,"fx":fx},
     "apps":apps
   };
 }
@@ -834,9 +887,9 @@ function resetAll(){
 function initRefs(){
   board=$('board'); overlay=$('overlay'); grid=$('grid'); countEl=$('count');
   editBtn=$('editBtn'); themeBtn=$('themeBtn'); editbar=$('editbar'); colsSeg=$('colsSeg');
-  resetBtn=$('resetBtn'); exportBtn=$('exportBtn'); doneBtn=$('doneBtn');
+  resetBtn=$('resetBtn'); exportBtn=$('exportBtn'); doneBtn=$('doneBtn'); fxBtn=$('fxBtn');
   sheet=$('sheet'); sheetBack=$('sheetBack'); sheetIc=$('sheetIc'); sheetTitle=$('sheetTitle');
-  sheetClose=$('sheetClose'); segW=$('segW'); segH=$('segH'); segBg=$('segBg'); segView=$('segView'); toastEl=$('toast');
+  sheetClose=$('sheetClose'); segW=$('segW'); segH=$('segH'); segBg=$('segBg'); segOp=$('segOp'); segView=$('segView'); toastEl=$('toast');
 }
 function wire(){
   $('colsIcoSlot').insertAdjacentHTML('afterbegin', icoSvg('columns'));
@@ -849,11 +902,13 @@ function wire(){
   doneBtn.addEventListener('click', function(){ setEditing(false); });
   resetBtn.addEventListener('click', resetAll);
   exportBtn.addEventListener('click', exportJson);
+  fxBtn.addEventListener('click', toggleFx);
   sheetClose.addEventListener('click', closeSheet);
   sheetBack.addEventListener('click', closeSheet);
   document.addEventListener('keydown', function(e){
     if(e.key!=='Escape') return;
     if(currentSlug!=null) closeSheet(); else if(editing) setEditing(false); });
+  applyFx();
   if(typeof ResizeObserver!=='undefined'){ try{ new ResizeObserver(relayout).observe(board); }catch(e){} }
   addEventListener('resize', relayout);
 }
