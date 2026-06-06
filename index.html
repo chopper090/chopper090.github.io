@@ -530,7 +530,7 @@ function gridRows(){
 function cardEl(slug){
   var meta=META[slug];
   var a=el('a','card'); a.dataset.slug=slug; a.draggable=false;
-  a.href = meta.soon ? '#' : appUrl(slug);
+  a.href = meta.soon ? '#' : ('app.html?app='+encodeURIComponent(slug));   // apre l'app dentro la cornice CHOPPER (logo "indietro")
   if(meta.color) a.style.setProperty('--app-color', meta.color);
   if(meta.cover) a._cover=meta.cover;
 
