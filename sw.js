@@ -1,7 +1,7 @@
 // chopper090 hub — service worker.
 // Intercetta SOLO i file dell'hub (root). Le sotto-app (/nemo/, /umami/, ...) hanno
 // il loro service worker con scope più specifico → restano indipendenti, mai toccate qui.
-const CACHE = 'chopper090.github.io-v1.6.0';
+const CACHE = 'chopper090.github.io-v1.7.0';
 const SHELL = ['./', './index.html', './app.html', './apps.json', './manifest.webmanifest',
   './icon-192.png', './icon-512.png', './icon-512-maskable.png', './apple-touch-icon.png', './body.png'];
 

@@ -122,6 +122,26 @@ body:not(.editing) .card:hover{transform:translateY(-3px);border-color:var(--app
 .card.soon{opacity:.6;}
 body:not(.editing) .card.soon{pointer-events:none;}
 
+/* ===== app nascoste ===== */
+.card.is-hidden{display:none;}
+body.editing .card.is-hidden,
+body.show-hidden .card.is-hidden{display:flex;opacity:.5;}
+body.editing .card.is-hidden:hover,
+body.show-hidden .card.is-hidden:hover{opacity:.78;}
+.hidden-flag{display:none;}
+body.editing .card.is-hidden .hidden-flag,
+body.show-hidden .card.is-hidden .hidden-flag{
+  display:inline-flex;align-items:center;gap:4px;position:absolute;z-index:4;left:9px;bottom:8px;
+  font-family:var(--font-mono);font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--text-subtle);background:color-mix(in srgb,var(--surface) 86%,transparent);
+  border:1px solid var(--border);padding:2px 7px;border-radius:999px;
+  -webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);}
+.hidden-flag .ico{width:11px;height:11px;}
+
+/* tasto "vedi tutto" */
+.showall{display:flex;justify-content:center;margin:22px auto 0;}
+.showall[hidden]{display:none;}
+
 .card-bg{position:absolute;inset:0;z-index:0;border-radius:inherit;overflow:hidden;pointer-events:none;}
 .card-bg .shot{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center;
   opacity:var(--shot-op,.42);}
@@ -301,6 +321,10 @@ footer .ft a:hover{color:var(--accent);}
     <div class="grid-layer grid" id="grid"></div>
   </div>
 
+  <div class="showall" id="showallWrap" hidden>
+    <button class="btn ghost" id="showallBtn" type="button"></button>
+  </div>
+
   <footer>
     <span class="ft" id="count">—</span>
     <span class="ft">offline · niente tracking · niente cookie</span>
@@ -355,6 +379,9 @@ footer .ft a:hover{color:var(--accent);}
     <div class="ctl-label">Vista</div>
     <div class="seg" id="segView"></div>
   </div>
+  <div class="ctl">
+    <button class="btn" id="hideBtn" type="button" style="width:100%;justify-content:center;"></button>
+  </div>
 </div>
 
 <div class="toast" id="toast" hidden></div>
@@ -377,7 +404,9 @@ var ICONS = {
   reset:'<polyline points="1 4 1 10 7 10"/><path d="M3.5 15a9 9 0 1 0 2.1-9.4L1 10"/>',
   download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
   grip:'<circle cx="9" cy="6" r="1.4"/><circle cx="9" cy="12" r="1.4"/><circle cx="9" cy="18" r="1.4"/><circle cx="15" cy="6" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="15" cy="18" r="1.4"/>',
-  spark:'<path d="M12 3l1.6 5.4L19 10l-5.4 1.6L12 17l-1.6-5.4L5 10l5.4-1.6Z"/><path d="M19 14l.6 2L22 16.6l-2.4.6L19 20l-.6-2.4L16 16.6l2.4-.6Z"/>'
+  spark:'<path d="M12 3l1.6 5.4L19 10l-5.4 1.6L12 17l-1.6-5.4L5 10l5.4-1.6Z"/><path d="M19 14l.6 2L22 16.6l-2.4.6L19 20l-.6-2.4L16 16.6l2.4-.6Z"/>',
+  eye:'<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/>',
+  eyeOff:'<path d="M9.9 4.24A9 9 0 0 1 12 4c7 0 11 8 11 8a18.4 18.4 0 0 1-2.2 3.2M6.6 6.6A18.4 18.4 0 0 0 1 12s4 8 11 8a9 9 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 1 0 4.2 4.2"/><line x1="2" y1="2" x2="22" y2="22"/>'
 };
 function icoSvg(name, fill){ return '<svg class="ico'+(fill?' fill':'')+'" viewBox="0 0 24 24" aria-hidden="true">'+(ICONS[name]||'')+'</svg>'; }
 
@@ -393,14 +422,15 @@ var META = {};           // slug -> meta app (name,tagline,color,_cat,soon,...)
 var LIST = [];           // ordine sorgente degli slug
 var cols = 4;            // colonne attive
 var P = {};              // slug -> { x,y,w,h,bg,view }
-var editing = false, currentSlug = null, fx = true;
+var editing = false, currentSlug = null, fx = true, showHidden = false;
 var board, overlay, grid, dropGhost;
 var drag = null;         // stato drag/resize
 
 /* ---- refs ---- */
 var $ = function(id){ return document.getElementById(id); };
 var editBtn,themeBtn,editbar,colsSeg,resetBtn,exportBtn,doneBtn,fxBtn,
-    sheet,sheetBack,sheetIc,sheetTitle,sheetClose,segW,segH,segBg,segView,segOp,toastEl,countEl;
+    sheet,sheetBack,sheetIc,sheetTitle,sheetClose,segW,segH,segBg,segView,segOp,toastEl,countEl,
+    showallWrap,showallBtn,hideBtn;
 
 /* ---- helper ---- */
 function el(tag, cls, html){ var e=document.createElement(tag); if(cls)e.className=cls; if(html!=null)e.innerHTML=html; return e; }
@@ -489,7 +519,7 @@ function placeAll(){
       P[slug]={ x:o.x|0, y:o.y|0, w:clamp(o.w||1,1,cols), h:clamp(o.h||1,1,MAX_H),
                 bg: BG_TYPES.indexOf(o.bg)>=0?o.bg:defBg(META[slug]),
                 view: VIEW_TYPES.indexOf(o.view)>=0?o.view:'auto',
-                op: (o.op==null?null:clamp(o.op,5,100)) }; }});
+                op: (o.op==null?null:clamp(o.op,5,100)), hidden: !!o.hidden }; }});
   } else {
     cols = clamp((RAW&&RAW.grid&&RAW.grid.cols)||4, MIN_COLS, MAX_COLS);
     fx = !(RAW&&RAW.grid&&RAW.grid.fx===false);
@@ -497,7 +527,7 @@ function placeAll(){
     var hasPos = LIST.some(function(s){ var m=META[s]; return isInt(m.x)&&isInt(m.y)&&m.w&&m.h; });
     if(hasPos) LIST.forEach(function(slug){ var m=META[slug]; if(isInt(m.x)){
       P[slug]={ x:m.x|0, y:m.y|0, w:clamp(m.w,1,cols), h:clamp(m.h,1,MAX_H), bg:defBg(m), view:defView(m),
-                op:(m.op==null?null:clamp(m.op,5,100)) }; }});
+                op:(m.op==null?null:clamp(m.op,5,100)), hidden:!!m.hidden }; }});
   }
   fillMissing();   // app senza posizione → auto-place
   sanitize();      // niente sovrapposizioni / fuori griglia
@@ -507,7 +537,7 @@ function fillMissing(){
     if(P[slug]) return;
     var wh=defaultWH(META[slug]); var w=clamp(wh[0],1,cols), h=clamp(wh[1],1,MAX_H);
     var pos=appendPos(w,h,occupancy(null));
-    P[slug]={ x:pos.x, y:pos.y, w:w, h:h, bg:defBg(META[slug]), view:defView(META[slug]), op:null };
+    P[slug]={ x:pos.x, y:pos.y, w:w, h:h, bg:defBg(META[slug]), view:defView(META[slug]), op:null, hidden:!!META[slug].hidden };
   });
 }
 function sanitize(){
@@ -521,8 +551,13 @@ function sanitize(){
     for(var dx=0;dx<p.w;dx++) for(var dy=0;dy<p.h;dy++) occ[(p.x+dx)+','+(p.y+dy)]=slug;
   });
 }
+/* ---- visibilità (nascondi/mostra app) ---- */
+function isHidden(slug){ return !!(P[slug] && P[slug].hidden); }
+function shown(slug){ return editing || showHidden || !isHidden(slug); }
+function hiddenCount(){ var n=0; for(var s in P){ if(isHidden(s)) n++; } return n; }
+
 function gridRows(){
-  var bottom=0; for(var s in P) bottom=Math.max(bottom, P[s].y+P[s].h);
+  var bottom=0; for(var s in P){ if(!shown(s)) continue; bottom=Math.max(bottom, P[s].y+P[s].h); }
   if(editing) return Math.max(bottom+2, 4);
   return Math.max(bottom, 1);
 }
@@ -555,13 +590,14 @@ function cardEl(slug){
   var tag=el('div','tag'); tag.textContent=meta.tagline||'';
   txt.appendChild(name); txt.appendChild(tag);
 
+  var hflag=el('span','hidden-flag', icoSvg('eyeOff')+'<span>nascosta</span>'); hflag.setAttribute('aria-hidden','true');
   var grip=el('span','grip', icoSvg('grip',true)); grip.setAttribute('aria-hidden','true');
   var setBtn=el('span','settings-btn', icoSvg('sliders')); setBtn.setAttribute('role','button');
   setBtn.setAttribute('aria-label','Personalizza'); setBtn.setAttribute('tabindex','-1');
   var rsz=el('span','resize'); rsz.setAttribute('role','button'); rsz.setAttribute('aria-label','Ridimensiona'); rsz.setAttribute('tabindex','-1');
 
   a.appendChild(bg); a.appendChild(scrim); a.appendChild(top); a.appendChild(txt);
-  a.appendChild(grip); a.appendChild(setBtn); a.appendChild(rsz);
+  a.appendChild(grip); a.appendChild(setBtn); a.appendChild(rsz); a.appendChild(hflag);
   a._ic=ic; a._nameText=nameText; a._tag=tag; a._bg=bg; a._shotImg=shot;
 
   setBtn.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); openSheet(slug); });
@@ -578,7 +614,7 @@ function applyCardStyle(card){
   card.style.gridRow=(p.y+1)+' / span '+p.h;
   var view=resolvedView(p), flags=[];
   if(p.w>=2&&p.h>=2) flags.push('big');
-  card.className='card v-'+view+(META[slug].soon?' soon':'')+(flags.length?' '+flags.join(' '):'');
+  card.className='card v-'+view+(META[slug].soon?' soon':'')+(p.hidden?' is-hidden':'')+(flags.length?' '+flags.join(' '):'');
 }
 function applyCardBg(card){
   var slug=card.dataset.slug, p=P[slug]; if(!p) return;
@@ -665,10 +701,9 @@ function render(data){
   placeAll();
   grid.innerHTML='';
   dropGhost=el('div','drop-ghost'); grid.appendChild(dropGhost);
-  var total=0;
-  LIST.forEach(function(slug,idx){ var c=cardEl(slug); c.style.setProperty('--i', idx); grid.appendChild(c); refreshCard(c); enrich(c); loadCover(c,slug); if(!META[slug].soon) total++; });
+  LIST.forEach(function(slug,idx){ var c=cardEl(slug); c.style.setProperty('--i', idx); grid.appendChild(c); refreshCard(c); enrich(c); loadCover(c,slug); });
   buildOverlay(); relayout(); applyFx();
-  countEl.textContent = total+' app';
+  updateCount(); updateShowAllBtn();
 }
 
 /* ---- geometria puntatore ---- */
@@ -804,6 +839,7 @@ function openSheet(slug){
   if(card&&card._iconSrc){ var im=new Image(); im.src=card._iconSrc; im.alt=''; sheetIc.appendChild(im); }
   else sheetIc.appendChild(el('div','fallback',(meta.name||slug).slice(0,1).toUpperCase()));
   buildSheetSegs(slug);
+  buildHideBtn(slug);
   sheetBack.hidden=false; sheet.hidden=false;
   requestAnimationFrame(function(){ sheet.classList.add('open'); sheetBack.classList.add('open'); });
 }
@@ -843,7 +879,45 @@ function setEditing(on){
   editBtn.setAttribute('aria-pressed', on?'true':'false');
   editBtn.title = on ? 'Fine modifica' : 'Personalizza layout';
   if(on) buildColsSeg(); else closeSheet();
+  document.body.classList.toggle('show-hidden', showHidden && !on);
+  updateShowAllBtn();
   buildOverlay(); relayout();
+}
+
+/* ---- nascondi / mostra app ---- */
+function updateCount(){
+  var total=0, hid=0;
+  LIST.forEach(function(s){ if(META[s]&&META[s].soon) return; total++; if(isHidden(s)) hid++; });
+  if(countEl) countEl.textContent = total+' app'+(hid? ' · '+hid+(hid===1?' nascosta':' nascoste') : '');
+}
+function updateShowAllBtn(){
+  if(!showallWrap||!showallBtn) return;
+  var n=hiddenCount();
+  if(editing || n===0){ showallWrap.hidden=true; return; }
+  showallWrap.hidden=false;
+  showallBtn.innerHTML = icoSvg(showHidden?'eyeOff':'eye')
+    + '<span>'+(showHidden ? 'Nascondi le extra' : ('Vedi tutto · '+n+(n===1?' nascosta':' nascoste')))+'</span>';
+}
+function setShowHidden(on){
+  showHidden=!!on;
+  document.body.classList.toggle('show-hidden', showHidden && !editing);
+  buildOverlay(); relayout();
+  updateShowAllBtn();
+}
+function buildHideBtn(slug){
+  if(!hideBtn) return;
+  var hid=isHidden(slug);
+  hideBtn.className='btn'+(hid?' solid':' ghost danger');
+  hideBtn.innerHTML=icoSvg(hid?'eye':'eyeOff')+'<span>'+(hid?'Mostra nella dash':'Nascondi dalla dash')+'</span>';
+}
+function toggleHidden(slug){
+  var p=P[slug]; if(!p) return;
+  p.hidden=!p.hidden;
+  saveState();
+  var card=cardBySlug(slug); if(card) refreshCard(card);
+  buildOverlay(); relayout();
+  updateCount(); updateShowAllBtn(); buildHideBtn(slug);
+  toast(p.hidden ? 'App nascosta dalla dash' : 'App di nuovo visibile');
 }
 
 /* ---- animazioni on/off ---- */
@@ -861,6 +935,7 @@ function buildConfig(){
     if(m.color) o.color=m.color; if(m._cat) o.cat=m._cat; if(m.cover) o.cover=m.cover;
     o.x=p.x; o.y=p.y; o.w=p.w; o.h=p.h; o.bg=p.bg; o.view=p.view||'auto';
     if(p.op!=null) o.op=p.op;
+    if(p.hidden) o.hidden=true;
     if(m.soon) o.soon=true; return o;
   });
   return {
@@ -880,6 +955,7 @@ function resetAll(){
   if(!confirm('Ripristinare layout, dimensioni e stili predefiniti? Le personalizzazioni di questo dispositivo verranno perse.')) return;
   closeSheet();
   try{ localStorage.removeItem(LS); }catch(e){}
+  showHidden=false; document.body.classList.remove('show-hidden');
   render(RAW); if(editing) buildColsSeg();
   toast('Layout ripristinato');
 }
@@ -891,6 +967,7 @@ function initRefs(){
   resetBtn=$('resetBtn'); exportBtn=$('exportBtn'); doneBtn=$('doneBtn'); fxBtn=$('fxBtn');
   sheet=$('sheet'); sheetBack=$('sheetBack'); sheetIc=$('sheetIc'); sheetTitle=$('sheetTitle');
   sheetClose=$('sheetClose'); segW=$('segW'); segH=$('segH'); segBg=$('segBg'); segOp=$('segOp'); segView=$('segView'); toastEl=$('toast');
+  showallWrap=$('showallWrap'); showallBtn=$('showallBtn'); hideBtn=$('hideBtn');
 }
 function wire(){
   $('colsIcoSlot').insertAdjacentHTML('afterbegin', icoSvg('columns'));
@@ -904,6 +981,8 @@ function wire(){
   resetBtn.addEventListener('click', resetAll);
   exportBtn.addEventListener('click', exportJson);
   fxBtn.addEventListener('click', toggleFx);
+  showallBtn.addEventListener('click', function(){ setShowHidden(!showHidden); });
+  hideBtn.addEventListener('click', function(){ if(currentSlug) toggleHidden(currentSlug); });
   sheetClose.addEventListener('click', closeSheet);
   sheetBack.addEventListener('click', closeSheet);
   document.addEventListener('keydown', function(e){
