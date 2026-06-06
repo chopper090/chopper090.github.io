@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CHOPPER</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" id="metaTheme" content="#15171C">
+
+<!-- anti-FOUC: stesso tema della dash (stesso localStorage), prima del primo paint -->
+<script>(function(){try{var t=localStorage.getItem('hub.theme');
+  if(t!=='light'&&t!=='dark')t=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
+  var d=document.documentElement; d.setAttribute('data-theme',t); d.style.colorScheme=t;
+}catch(e){}})();</script>
+
+<style>
+:root{
+  --surface:#FFFFFF; --surface-2:#EFECE3; --border:#DDD7C7; --accent:#C15F3C; --bg:#F6F4EE;
+  --text:#1A1D24;
+  --shadow:0 6px 22px rgba(20,18,12,.16),0 2px 8px rgba(20,18,12,.10);
+  --font-ui:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+}
+:root[data-theme="dark"]{
+  --surface:#1C1F26; --surface-2:#232730; --border:#2F3540; --accent:#E07A52; --bg:#15171C;
+  --text:#ECE9E0;
+  --shadow:0 6px 22px rgba(0,0,0,.5),0 2px 10px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;}
+body{background:var(--bg);overflow:hidden;}
+
+/* l'app gira qui dentro, a tutto schermo, intatta */
+.frame{position:fixed;inset:0;width:100%;height:100%;border:0;display:block;background:var(--bg);}
+
+/* logo CHOPPER fisso in alto a sinistra → torna alla dash */
+.chopper-home{
+  position:fixed;z-index:2147483647;
+  top:calc(env(safe-area-inset-top,0px) + 12px);
+  left:calc(env(safe-area-inset-left,0px) + 12px);
+  display:inline-flex;align-items:center;gap:6px;
+  height:46px;padding:4px 13px 4px 5px;
+  background:var(--surface);border:1px solid var(--border);border-radius:999px;
+  box-shadow:var(--shadow);text-decoration:none;color:var(--text);
+  font-family:var(--font-ui);font-weight:600;font-size:13.5px;letter-spacing:.01em;
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;
+  transition:border-color .18s,transform .18s,box-shadow .18s,background .18s;
+}
+.chopper-home:hover{border-color:var(--accent);transform:translateY(-1px);}
+.chopper-home:active{transform:translateY(0) scale(.97);}
+.chopper-home:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.chopper-home .chev{width:16px;height:16px;flex:none;stroke:currentColor;stroke-width:2.4;
+  fill:none;stroke-linecap:round;stroke-linejoin:round;opacity:.65;}
+.chopper-home .logo{width:36px;height:36px;flex:none;border-radius:50%;object-fit:cover;
+  background:var(--surface-2);}
+.chopper-home .label{padding-right:3px;white-space:nowrap;}
+@media(max-width:480px){
+  .chopper-home{padding:4px 7px;gap:3px;}
+  .chopper-home .label{display:none;}
+}
+@media(prefers-reduced-motion:reduce){ .chopper-home{transition:none;} }
+</style>
+</head>
+<body>
+<iframe class="frame" id="frame" title="App"
+  allow="accelerometer; autoplay; camera; clipboard-read; clipboard-write; encrypted-media; fullscreen; geolocation; gyroscope; microphone; midi; payment; usb; xr-spatial-tracking"></iframe>
+
+<a class="chopper-home" id="home" href="./" aria-label="Torna alla dashboard CHOPPER" title="Torna alla dashboard">
+  <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
+  <img class="logo" src="icon-192.png" alt="" aria-hidden="true">
+  <span class="label">Dash</span>
+</a>
+
+<script>
+(function(){
+  function rawSlug(){
+    var q=new URLSearchParams(location.search);
+    return (q.get('app')||q.get('a')||(location.hash?location.hash.replace(/^#/,''):'')||'').trim();
+  }
+  // slug sicuro: niente path traversal / URL assoluti, solo [a-z0-9_-]
+  function clean(s){ return /^[a-z0-9](?:[a-z0-9_-]*[a-z0-9])?$/i.test(s) ? s : ''; }
+
+  var slug=clean(rawSlug());
+  if(!slug){ location.replace('./'); return; }     // app non valida → dash
+
+  var frame=document.getElementById('frame');
+  frame.src='./'+slug+'/';                          // project page same-origin: /<slug>/
+  var cap=slug.charAt(0).toUpperCase()+slug.slice(1);
+  document.title=cap+' · CHOPPER';
+  frame.title=cap;
+
+  // best-effort: nome + colore reali dell'app dalla lista della dash
+  fetch('apps.json',{cache:'no-cache'}).then(function(r){return r.json();}).then(function(d){
+    var apps=[];
+    if(d&&Array.isArray(d.apps)) apps=d.apps;
+    else if(d&&d.categories) d.categories.forEach(function(c){(c.apps||[]).forEach(function(a){apps.push(a);});});
+    var meta=apps.filter(function(a){return a.slug===slug;})[0];
+    if(meta){
+      if(meta.name){ document.title=meta.name+' · CHOPPER'; frame.title=meta.name; }
+      if(meta.color) document.getElementById('metaTheme').setAttribute('content', meta.color);
+    }
+  }).catch(function(){});
+})();
+</script>
+</body>
+</html>

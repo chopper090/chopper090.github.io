@@ -404,7 +404,8 @@ var editBtn,themeBtn,editbar,colsSeg,resetBtn,exportBtn,doneBtn,fxBtn,
 
 /* ---- helper ---- */
 function el(tag, cls, html){ var e=document.createElement(tag); if(cls)e.className=cls; if(html!=null)e.innerHTML=html; return e; }
-function appUrl(s){ return './' + s + '/'; }
+function appUrl(s){ return './' + s + '/'; }                     // path reale app (manifest/cover live)
+function frameUrl(s){ return './app.html?app=' + encodeURIComponent(s); } // wrapper con logo "torna alla dash"
 function resolveAsset(slug, src){ return /^https?:\/\//.test(src) ? src : appUrl(slug)+src.replace(/^\.?\//,''); }
 function clamp(n,a,b){ n=parseInt(n,10); if(isNaN(n))n=a; return Math.max(a,Math.min(b,n)); }
 function isInt(n){ return typeof n==='number' && isFinite(n) && Math.floor(n)===n; }
@@ -530,7 +531,7 @@ function gridRows(){
 function cardEl(slug){
   var meta=META[slug];
   var a=el('a','card'); a.dataset.slug=slug; a.draggable=false;
-  a.href = meta.soon ? '#' : appUrl(slug);
+  a.href = meta.soon ? '#' : frameUrl(slug);  // apre l'app nel wrapper: logo CHOPPER per tornare alla dash
   if(meta.color) a.style.setProperty('--app-color', meta.color);
   if(meta.cover) a._cover=meta.cover;
 
