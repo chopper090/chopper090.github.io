@@ -1,29 +1,136 @@
-{
-  "_nota": "Lista degli URL + categoria + taglia. Nome/icona/colore/screenshot vengono letti a runtime dal manifest live di ogni app (auto-sync). 'size' controlla il tile bento: hero (2x2) · wide (2x1) · tall (1x2) · sm (1x1, default). Campi opzionali per-app: cols (blocchi X 1-4) · rows (blocchi Y 1-3) · bg (screenshot|synthetic|solid|gradient|none) · view (standard|compact|icon|detail). In alternativa al formato 'categories' si può usare il formato flat con 'cat' su ogni app (vedi export dall'editor: matita in alto a destra). L'ordine qui = l'ordine nella griglia. Aggiungere un'app = una riga qui.",
-  "categories": [
-    {
-      "label": "Musica",
-      "apps": [
-        { "slug": "nemo",    "name": "Nemo",      "tagline": "Fretboard & ear training",     "color": "#5840D7", "size": "hero" },
-        { "slug": "lucille", "name": "Lucille",   "tagline": "Pentatonica · guida blues",     "color": "#E8A838", "size": "sm" }
-      ]
-    },
-    {
-      "label": "Cucina",
-      "apps": [
-        { "slug": "umami",   "name": "Umami",     "tagline": "Matrice dei sapori",            "color": "#C2611F", "size": "tall" },
-        { "slug": "cambusa", "name": "Cambusa",   "tagline": "Gestione · food cost · HACCP",  "color": "#3B5BDB", "size": "sm" },
-        { "slug": "carta",     "name": "Carta",     "tagline": "Generatore di menu",            "color": "#2A2E32", "size": "wide" },
-        { "slug": "dalentini", "name": "DaLentini", "tagline": "Identità · home restaurant",    "color": "#C4A86A", "size": "sm" },
-        { "slug": "DaLentini_WEB", "name": "DaLentini", "tagline": "Il sito vetrina",          "color": "#C8A35E", "size": "wide" }
-      ]
-    },
-    {
-      "label": "Strumenti",
-      "apps": [
-        { "slug": "argo",    "name": "Argo",      "tagline": "Obiettivi, note, spese",        "color": "#3B5BDB", "size": "sm" },
-        { "slug": "glaido",  "name": "Glaido",    "tagline": "In arrivo",                     "color": "#7B8290", "size": "wide", "soon": true }
-      ]
-    }
-  ]
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CHOPPER</title>
+<meta name="theme-color" id="metaTheme" content="#FBF6EA">
+<meta name="robots" content="noindex">
+<link rel="icon" href="apple-touch-icon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+<!-- anti-FOUC: tema (condiviso con la dash) prima del primo paint -->
+<script>(function(){try{var t=localStorage.getItem('hub.theme');
+  if(t!=='light'&&t!=='dark')t=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
+  var d=document.documentElement; d.setAttribute('data-theme',t); d.style.colorScheme=t;
+}catch(e){}})();</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Hanken+Grotesk:wght@500;600;700&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#F1E7D2; --surface:#FBF6EA; --border:#E0CFA6; --border-strong:#CDB585;
+  --text:#2B2114; --text-muted:#6E6047; --accent:#C5384A; --bar:rgba(251,246,234,.88);
+  --shadow:0 1px 3px rgba(60,42,18,.12);
+  --font-mono:"Space Mono",ui-monospace,Menlo,monospace;
+  --font-display:"Bricolage Grotesque",-apple-system,system-ui,sans-serif;
+  --font-ui:"Hanken Grotesk",-apple-system,system-ui,sans-serif;
 }
+:root[data-theme="dark"]{
+  --bg:#12161D; --surface:#1A1F28; --border:#2D3744; --border-strong:#46525F;
+  --text:#F3EAD6; --text-muted:#AEB6C2; --accent:#E8556A; --bar:rgba(26,31,40,.88);
+  --shadow:0 1px 3px rgba(0,0,0,.42);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{display:flex;flex-direction:column;background:var(--bg);color:var(--text);
+  font-family:var(--font-ui);height:100svh;overflow:hidden;-webkit-font-smoothing:antialiased;}
+
+.cbar{flex:none;display:flex;align-items:center;gap:10px;
+  min-height:calc(50px + env(safe-area-inset-top));
+  padding:calc(env(safe-area-inset-top) + 7px) 12px 7px 12px;
+  background:var(--bar);-webkit-backdrop-filter:saturate(1.4) blur(12px);backdrop-filter:saturate(1.4) blur(12px);
+  border-bottom:1.5px solid var(--border-strong);}
+.cback{display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:var(--text);
+  padding:6px 13px 6px 9px;border-radius:999px;border:1.5px solid var(--border-strong);background:var(--surface);
+  box-shadow:var(--shadow);min-height:36px;transition:border-color .15s,transform .15s,box-shadow .15s,color .15s;}
+.cback:hover{border-color:var(--accent);transform:translateX(-1px);color:var(--accent);}
+.cback:active{transform:translateX(0);}
+.cback .chev{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;}
+.cmark{width:24px;height:24px;border-radius:7px;object-fit:cover;display:block;background:var(--accent);}
+.cword{font-family:var(--font-display);font-weight:800;font-size:13.5px;letter-spacing:.05em;text-transform:uppercase;}
+.capp{flex:1;min-width:0;font-weight:600;font-size:14px;color:var(--text-muted);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;padding-left:4px;}
+.copen{flex:none;display:grid;place-items:center;width:36px;height:36px;border-radius:10px;
+  border:1.5px solid var(--border-strong);background:var(--surface);color:var(--text-muted);text-decoration:none;
+  transition:border-color .15s,color .15s;}
+.copen:hover{border-color:var(--accent);color:var(--accent);}
+.copen svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+
+.stage{flex:1;min-height:0;position:relative;background:var(--bg);}
+iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;background:var(--bg);}
+.loading{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;color:var(--text-muted);
+  font-size:13.5px;transition:opacity .3s;text-align:center;padding:24px;}
+.loading.hide{opacity:0;}
+.loading a{pointer-events:auto;color:var(--accent);text-decoration:none;display:inline-block;margin-top:10px;font-weight:700;}
+.loading a:hover{text-decoration:underline;}
+.spin{width:28px;height:28px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--accent);
+  animation:spin .8s linear infinite;margin:0 auto 12px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.spin{animation:none}}
+</style>
+</head>
+<body>
+  <header class="cbar">
+    <a class="cback" href="./" title="Torna a CHOPPER" aria-label="Torna a CHOPPER">
+      <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+      <img class="cmark" src="icon-192.png" alt="" aria-hidden="true">
+      <span class="cword">CHOPPER</span>
+    </a>
+    <span class="capp" id="capp"></span>
+    <a class="copen" id="copen" target="_self" title="Apri l'app a schermo intero (senza CHOPPER)" aria-label="Apri a schermo intero senza CHOPPER">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/></svg>
+    </a>
+  </header>
+
+  <div class="stage">
+    <div class="loading" id="loading">
+      <div>
+        <div class="spin" aria-hidden="true"></div>
+        <div id="loadtext">Apro l'app…</div>
+        <a id="loadlink" href="#" hidden>Apri l'app direttamente ↗</a>
+      </div>
+    </div>
+    <iframe id="frame" title="App in CHOPPER"
+      allow="fullscreen; clipboard-read; clipboard-write; autoplay; geolocation; microphone; camera; midi; payment; accelerometer; gyroscope"></iframe>
+  </div>
+
+<script>
+(function(){
+  function dash(){ location.replace('./'); }
+  var slug = (new URLSearchParams(location.search).get('app') || '').trim();
+  if(!/^[a-z0-9][a-z0-9_-]*$/i.test(slug)) return dash();
+
+  var frame=document.getElementById('frame'), capp=document.getElementById('capp'),
+      copen=document.getElementById('copen'), loading=document.getElementById('loading'),
+      loadtext=document.getElementById('loadtext'), loadlink=document.getElementById('loadlink');
+
+  function setName(n){ capp.textContent=n||''; document.title=(n?n+' · ':'')+'CHOPPER'; }
+  var target = slug + '/';
+  copen.href = target; loadlink.href = target; setName(slug);
+
+  try{ var dark=document.documentElement.getAttribute('data-theme')==='dark';
+    document.getElementById('metaTheme').setAttribute('content', dark?'#1A1F28':'#FBF6EA'); }catch(e){}
+
+  var to=setTimeout(function(){ loadtext.textContent='Ci sta mettendo un po’…'; loadlink.hidden=false; }, 6000);
+  frame.addEventListener('load', function(){
+    clearTimeout(to); loading.classList.add('hide');
+    setTimeout(function(){ loading.style.display='none'; }, 350);
+  });
+  frame.src = target;
+
+  fetch('apps.json',{cache:'no-cache'}).then(function(r){ return r.json(); }).then(function(data){
+    var apps = Array.isArray(data.apps) ? data.apps
+             : (data.categories||[]).reduce(function(o,c){ return o.concat(c.apps||[]); }, []);
+    var meta = apps.filter(function(a){ return a && a.slug===slug; })[0];
+    if(!meta) return dash();
+    setName(meta.name||slug);
+    fetch(target+'manifest.webmanifest',{cache:'no-cache'}).then(function(r){ return r.json(); })
+      .then(function(m){ setName(m.short_name||m.name||meta.name||slug); }).catch(function(){});
+  }).catch(function(){ /* offline */ });
+})();
+</script>
+</body>
+</html>

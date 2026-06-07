@@ -1,0 +1,15 @@
+{
+  "_nota": "Esportato da CHOPPER. Griglia a posizionamento libero (celle quadrate). grid.cols = colonne; grid.fx = animazioni on/off. Per ogni app: x,y (cella, 0-based) + w,h (blocchi) + bg(screenshot|synthetic|mesh|solid|gradient|vignette|pattern|none) + view(auto|icon|standard|detail|compact) + shape(vivo|morbido|tondo) + accent(auto|red|blue|gold|teal|purple) + hover(lift|zoom|tilt|glow|none) + zoom(auto|vicino|medio|lontano) + pos(alto|centro|basso) + op (intensita sfondo 5-100, opzionale). La copertina 'screenshot' usa covers/<slug>.png se presente, altrimenti gli screenshots del manifest, altrimenti l'anteprima sintetica. name/tagline/color/cat opzionali (auto-letti dal manifest live). Compatibile col vecchio formato 'categories'.",
+  "grid": { "cols": 4, "fx": true },
+  "apps": [
+    { "slug": "argo",          "name": "Obiettivi", "tagline": "Obiettivi, note e spese — offline-first, con sync Firebase opzionale.", "color": "#3B5BDB", "cat": "Strumenti", "x": 0, "y": 0, "w": 2, "h": 2, "bg": "screenshot", "view": "auto" },
+    { "slug": "umami",         "name": "Umami",     "tagline": "Matrice dei sapori: abbinamenti per famiglie aromatiche.",          "color": "#C2611F", "cat": "Cucina",    "x": 2, "y": 0, "w": 1, "h": 2, "bg": "screenshot", "view": "auto", "pos": "centro" },
+    { "slug": "cambusa",       "name": "Cambusa",   "tagline": "Gestione · food cost · HACCP",                                      "color": "#3B5BDB", "cat": "Cucina",    "x": 3, "y": 0, "w": 1, "h": 1, "bg": "screenshot", "view": "auto" },
+    { "slug": "dalentini",     "name": "DaLentini", "tagline": "Identità visiva · home restaurant",                                 "color": "#C4A86A", "cat": "Cucina",    "x": 3, "y": 1, "w": 1, "h": 1, "bg": "screenshot", "view": "auto" },
+    { "slug": "nemo",          "name": "Nemo",      "tagline": "Fretboard & ear training: la mappa dei gradi sul manico.",          "color": "#5840D7", "cat": "Musica",    "x": 0, "y": 2, "w": 2, "h": 1, "bg": "screenshot", "view": "auto" },
+    { "slug": "carta",         "name": "Carta",     "tagline": "Generatore di menu per ristoranti: identità, stampa, varianti.",    "color": "#B98A3C", "cat": "Cucina",    "x": 2, "y": 2, "w": 2, "h": 1, "bg": "screenshot", "view": "auto" },
+    { "slug": "lucille",       "name": "Lucille",   "tagline": "Pentatonica · guida blues",                                         "color": "#E8A838", "cat": "Musica",    "x": 0, "y": 3, "w": 1, "h": 1, "bg": "screenshot", "view": "auto" },
+    { "slug": "DaLentini_WEB", "name": "DaLentini", "tagline": "Il sito vetrina: alta cucina a porte chiuse.",                     "color": "#C8A35E", "cat": "Cucina",    "x": 1, "y": 3, "w": 2, "h": 1, "bg": "screenshot", "view": "auto" },
+    { "slug": "glaido",        "name": "Glaido",    "tagline": "In arrivo",                                                         "color": "#7B8290", "cat": "Strumenti", "x": 3, "y": 3, "w": 1, "h": 1, "bg": "synthetic", "view": "auto", "soon": true }
+  ]
+}
