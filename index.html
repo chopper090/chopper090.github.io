@@ -285,6 +285,11 @@ body.editing .card:hover .resize{color:var(--accent);}
 .seg-btn:hover{border-color:var(--accent);transform:translateY(-1px);}
 .seg-btn.on{background:var(--accent);border-color:var(--accent);color:#fff;}
 .seg-btn .sw{width:16px;height:16px;border-radius:5px;border:1px solid rgba(0,0,0,.18);}
+.name-input{width:100%;font-family:var(--font-display);font-weight:700;font-size:16px;letter-spacing:-.01em;
+  color:var(--text);padding:9px 12px;border-radius:9px;border:1.5px solid var(--border-strong);
+  background:var(--surface-2);transition:border-color .15s;}
+.name-input:focus{outline:none;border-color:var(--accent);}
+.name-input::placeholder{color:var(--text-subtle);font-weight:600;}
 
 /* ===================== SHEET PER-CARD ===================== */
 .sheet-backdrop{position:fixed;inset:0;background:rgba(20,12,4,.5);z-index:50;opacity:0;transition:opacity .2s;
@@ -386,6 +391,11 @@ footer .ft a:hover{color:var(--accent);}
     <div class="sheet-ic" id="sheetIc"></div>
     <div class="sheet-title" id="sheetTitle">App</div>
     <button class="icon-btn" id="sheetClose" aria-label="Chiudi" title="Chiudi"></button>
+  </div>
+  <div class="ctl">
+    <div class="ctl-label" id="lblName">Nome visualizzato</div>
+    <input type="text" class="name-input" id="nameInput" autocomplete="off" spellcheck="false"
+      enterkeyhint="done" placeholder="Nome dell'app" aria-label="Nome visualizzato del tile">
   </div>
   <div class="ctl">
     <div class="ctl-row">
@@ -494,7 +504,7 @@ var drag = null;
 /* ---- refs ---- */
 var $ = function(id){ return document.getElementById(id); };
 var editBtn,themeBtn,editbar,colsSeg,resetBtn,exportBtn,doneBtn,fxBtn,
-    sheet,sheetBack,sheetIc,sheetTitle,sheetClose,
+    sheet,sheetBack,sheetIc,sheetTitle,sheetClose,nameInput,
     segW,segH,segBg,segView,segOp,segShape,segAccent,segZoom,segPos,segHover,ctlZoom,toastEl,countEl;
 
 /* ---- helper ---- */
@@ -579,6 +589,8 @@ function clampResize(x,y,wWant,hWant,occ){
 function normProps(o, meta){
   return {
     x:o.x|0, y:o.y|0, w:clamp(o.w||1,1,MAX_COLS), h:clamp(o.h||1,1,MAX_H),
+    label: (typeof o.label==='string' && o.label.trim()) ? o.label.trim()
+         : (meta && typeof meta.label==='string' && meta.label.trim() ? meta.label.trim() : null),
     bg: oneOf(o.bg, BG_TYPES, defBg(meta)),
     view: oneOf(o.view, VIEW_TYPES, 'auto'),
     op: (o.op==null?null:clamp(o.op,5,100)),
@@ -655,7 +667,7 @@ function cardEl(slug){
   top.appendChild(ic); top.appendChild(el('span','cat', meta._cat||''));
 
   var txt=el('div','txt');
-  var name=el('div','name'); var nameText=document.createTextNode(meta.name||slug);
+  var name=el('div','name'); var nameText=document.createTextNode((P[slug]&&P[slug].label)||meta.name||slug);
   name.appendChild(nameText); if(meta.soon) name.appendChild(el('span','badge','in arrivo'));
   var tag=el('div','tag'); tag.textContent=meta.tagline||'';
   txt.appendChild(name); txt.appendChild(tag);
@@ -735,8 +747,11 @@ function enrich(card){
   fetch(appUrl(slug)+'manifest.webmanifest', {cache:'no-cache'})
     .then(function(r){ if(!r.ok) throw 0; return r.json(); })
     .then(function(m){
-      var nm=m.short_name||m.name||meta.name;
-      if(nm){ card._nameText.nodeValue=nm; META[slug].name=nm; }
+      var mname=m.short_name||m.name; META[slug]._mname=mname||null;
+      var ov=P[slug]&&P[slug].label;            /* override esplicito (apps.json/editor) → vince sul manifest */
+      var nm=ov||mname||meta.name;
+      if(nm) card._nameText.nodeValue=nm;
+      if(mname) META[slug].name=mname;
       if(m.description){ card._tag.textContent=m.description; META[slug].tagline=m.description; }
       if(m.theme_color){ META[slug].color=m.theme_color; applyCardStyle(card); }
       var icons=(m.icons||[]).slice();
@@ -901,6 +916,17 @@ function setProp(slug, key, val){
   buildOverlay(); relayout();
   buildSheetSegs(slug);
 }
+function setAppLabel(slug, val){
+  var p=P[slug]; if(!p) return;
+  val=(val||'').trim();
+  p.label = val || null;                       /* vuoto → torna al default (label apps.json, poi manifest) */
+  saveState();
+  var m=META[slug];
+  var shown = val || (m&&(m.label||m._mname||m.name)) || slug;
+  var card=cardBySlug(slug);
+  if(card) card._nameText.nodeValue=shown;
+  sheetTitle.textContent=shown;
+}
 function buildSheetSegs(slug){
   var p=P[slug];
   var ws=[]; for(var i=1;i<=cols;i++) ws.push({val:i,label:String(i)});
@@ -946,6 +972,7 @@ function openSheet(slug){
   var meta=META[slug]; var card=cardBySlug(slug); if(!meta) return;
   currentSlug=slug;
   sheetTitle.textContent = (card&&card._nameText.nodeValue) || meta.name || slug;
+  if(nameInput){ nameInput.value=(P[slug]&&P[slug].label)||''; nameInput.placeholder=meta.label||meta._mname||meta.name||slug; }
   sheet.style.setProperty('--app-color', effAccent(slug) || 'var(--accent)');
   sheetIc.innerHTML='';
   if(card&&card._iconSrc){ var im=new Image(); im.src=card._iconSrc; im.alt=''; sheetIc.appendChild(im); }
@@ -1003,6 +1030,7 @@ function toggleFx(){ fx=!fx; saveState(); applyFx(); }
 function buildConfig(){
   var apps=LIST.map(function(slug){
     var m=META[slug], p=P[slug], o={slug:slug};
+    if(p&&p.label) o.label=p.label;
     if(m.name) o.name=m.name; if(m.tagline) o.tagline=m.tagline;
     if(m.color) o.color=m.color; if(m._cat) o.cat=m._cat; if(m.cover) o.cover=m.cover;
     o.x=p.x; o.y=p.y; o.w=p.w; o.h=p.h; o.bg=p.bg; o.view=p.view||'auto';
@@ -1015,7 +1043,7 @@ function buildConfig(){
     if(m.soon) o.soon=true; return o;
   });
   return {
-    "_nota":"Esportato da CHOPPER (look Wanted). Griglia a posizionamento libero. grid.cols = colonne; grid.fx = animazioni. Per ogni app: x,y (cella 0-based) + w,h (blocchi) + bg(screenshot|synthetic|mesh|solid|gradient|vignette|pattern|none) + view(auto|icon|standard|detail|compact) + shape(vivo|morbido|tondo) + accent(auto|red|blue|gold|teal|purple) + zoom(auto|lontano|medio|vicino) + pos(alto|centro|basso) + hover(lift|zoom|tilt|glow|none) + op(5-100, opz). Copertina 'screenshot': covers/<slug>.png, poi screenshots del manifest, poi sintetico. name/tagline/color/cat opzionali. Compatibile col vecchio formato 'categories'.",
+    "_nota":"Esportato da CHOPPER (look Wanted). Griglia a posizionamento libero. grid.cols = colonne; grid.fx = animazioni. Per ogni app: x,y (cella 0-based) + w,h (blocchi) + bg(screenshot|synthetic|mesh|solid|gradient|vignette|pattern|none) + view(auto|icon|standard|detail|compact) + shape(vivo|morbido|tondo) + accent(auto|red|blue|gold|teal|purple) + zoom(auto|lontano|medio|vicino) + pos(alto|centro|basso) + hover(lift|zoom|tilt|glow|none) + op(5-100, opz). Copertina 'screenshot': covers/<slug>.png, poi screenshots del manifest, poi sintetico. label = nome visualizzato forzato (vince sul manifest); name/tagline/color/cat opzionali (fallback se manca il manifest live). Compatibile col vecchio formato 'categories'.",
     "grid":{"cols":cols,"fx":fx},
     "apps":apps
   };
@@ -1052,7 +1080,7 @@ function initRefs(){
   board=$('board'); overlay=$('overlay'); grid=$('grid'); countEl=$('count');
   editBtn=$('editBtn'); themeBtn=$('themeBtn'); editbar=$('editbar'); colsSeg=$('colsSeg');
   resetBtn=$('resetBtn'); exportBtn=$('exportBtn'); doneBtn=$('doneBtn'); fxBtn=$('fxBtn');
-  sheet=$('sheet'); sheetBack=$('sheetBack'); sheetIc=$('sheetIc'); sheetTitle=$('sheetTitle');
+  sheet=$('sheet'); sheetBack=$('sheetBack'); sheetIc=$('sheetIc'); sheetTitle=$('sheetTitle'); nameInput=$('nameInput');
   sheetClose=$('sheetClose'); segW=$('segW'); segH=$('segH'); segBg=$('segBg'); segView=$('segView'); segOp=$('segOp');
   segShape=$('segShape'); segAccent=$('segAccent'); segZoom=$('segZoom'); segPos=$('segPos'); segHover=$('segHover'); ctlZoom=$('ctlZoom');
   toastEl=$('toast');
@@ -1073,6 +1101,9 @@ function wire(){
   setLbl('lblPos','layout','Posizione');
   setLbl('lblHover','wand','Effetto al passaggio');
   setLbl('lblView','layout','Vista contenuto');
+  setLbl('lblName','edit','Nome visualizzato');
+  nameInput.addEventListener('input', function(){ if(currentSlug) setAppLabel(currentSlug, nameInput.value); });
+  nameInput.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); nameInput.blur(); } });
   editBtn.addEventListener('click', function(){ setEditing(!editing); });
   doneBtn.addEventListener('click', function(){ setEditing(false); });
   resetBtn.addEventListener('click', resetAll);

@@ -18,6 +18,9 @@ carta, dalentini, DaLentini_WEB) · **Strumenti** (argo, glaido). *Gmail resta f
 **Come si edita.** **Aggiungere un'app = una riga in `apps.json`** (slug + categoria + size). Il
 resto (nome, icona, colore) è auto-letto dal `manifest.webmanifest` live dell'app → l'hub non si
 tocca per modifiche interne alle app. `size`: hero (2x2) · wide (2x1) · tall (1x2) · sm (1x1).
+**Nome visualizzato:** di default è quello del manifest live; per forzarne uno (disambiguare due app
+o rinominare un tile) usa il campo `label` in `apps.json` oppure il campo **"Nome"** nella sheet
+dell'editor (matita) → vince sul manifest e viene persistito/esportato col layout.
 
 **Gotcha.** Lo slug deve combaciare con lo slug di GitHub Pages. Dopo un rename repo, l'URL
 Pages **non** redirige (vecchio slug → 404): aggiornare qui. `.ico` ridondanti con i `.png`.
