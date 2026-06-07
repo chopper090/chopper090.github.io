@@ -10,6 +10,7 @@
     { "slug": "carta",         "name": "Carta",     "tagline": "Generatore di menu per ristoranti: identità, stampa, varianti.",    "color": "#B98A3C", "cat": "Cucina",    "x": 2, "y": 2, "w": 2, "h": 1, "bg": "screenshot", "view": "auto" },
     { "slug": "lucille",       "name": "Lucille",   "tagline": "Pentatonica · guida blues",                                         "color": "#E8A838", "cat": "Musica",    "x": 0, "y": 3, "w": 1, "h": 1, "bg": "screenshot", "view": "auto" },
     { "slug": "DaLentini_WEB", "label": "DaLentini", "name": "DaLentini", "tagline": "Il sito vetrina: alta cucina a porte chiuse.",                     "color": "#C8A35E", "cat": "Cucina",    "x": 1, "y": 3, "w": 2, "h": 1, "bg": "screenshot", "view": "auto" },
-    { "slug": "glaido",        "name": "Glaido",    "tagline": "In arrivo",                                                         "color": "#7B8290", "cat": "Strumenti", "x": 3, "y": 3, "w": 1, "h": 1, "bg": "synthetic", "view": "auto", "soon": true }
+    { "slug": "glaido",        "name": "Glaido",    "tagline": "In arrivo",                                                         "color": "#7B8290", "cat": "Strumenti", "x": 3, "y": 3, "w": 1, "h": 1, "bg": "synthetic", "view": "auto", "soon": true },
+    { "slug": "fantasta",      "name": "FantAsta",  "tagline": "Asta del fantacalcio, data-driven (Serie A + Mondiale).",           "color": "#15875A", "cat": "Strumenti", "x": 0, "y": 4, "w": 2, "h": 1, "bg": "synthetic", "view": "auto" }
   ]
 }
